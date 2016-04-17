@@ -1,0 +1,17 @@
+#!/bin/bash
+
+port=8529
+
+case $1 in
+    js)
+        echo "JavaScript used for Request"
+        #curl -X GET http://localhost:8529/_admin/time--dump - --header "Accept:application/x-velocypack"
+        curl -X GET http://localhost:$port/_admin/time--dump --header "Accept:application/x-velocypack"
+        echo
+    ;;
+    *)
+        echo "default case"
+        curl -XPOST http://localhost:$port/_api/document?collection=test -d '{ "foo" : "bar"  }' --header "Accept: application/x-velocypack"
+        echo
+    ;;
+esac

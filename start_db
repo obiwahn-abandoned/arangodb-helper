@@ -1,18 +1,20 @@
 #!/bin/bash
 
 source_dir="$HOME/work/arangodb"
-build_dir="$HOME/work/arangodb/build"
+build_dir="$HOME/work/arangodb-build"
 data_dir="$HOME/work/arangodb-data/"
 data_conf="$HOME/work/arangodb-conf/"
+
+port=8529
 
 cd "$source_dir"
 clear
 
-"./build/bin/arangod" \
+"$build_dir/bin/arangod" \
     --configuration none \
     --javascript.startup-directory js \
     --javascript.app-path "js/apps" \
-    --server.endpoint tcp://127.0.0.1:8529 \
+    --server.endpoint tcp://localhost:$port \
     --database.directory "$data_dir"
 rv=$?
 

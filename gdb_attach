@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if [[ -n $1 ]]; then
+    cmd_file="$1"
+else
+    cmd_file=default.gdb
+fi
+
+gdb -p $(pgrep arangod) -command="$cmd_file"
