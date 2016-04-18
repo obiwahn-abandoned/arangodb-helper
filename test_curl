@@ -10,7 +10,11 @@ case $1 in
         echo
     ;;
     *)
-        echo "default case"
+        echo "default case:"
+        echo "return json"
+        curl -XPOST http://localhost:$port/_api/document?collection=test -d '{ "foo" : "bar"  }'
+        echo
+        echo "return velocypack"
         curl -XPOST http://localhost:$port/_api/document?collection=test -d '{ "foo" : "bar"  }' --header "Accept: application/x-velocypack"
         echo
     ;;

@@ -1,9 +1,11 @@
 #!/bin/bash
 
+program="arangod"
+
 if [[ -n $1 ]]; then
     cmd_file="$1"
 else
     cmd_file=default.gdb
 fi
 
-gdb -p $(pgrep arangod) -command="$cmd_file"
+gdb -p $(pgrep "${program}") -command="$cmd_file"

@@ -1,9 +1,9 @@
 #!/bin/bash
 
 source_dir="$HOME/work/arangodb"
-build_dir="$HOME/work/arangodb-build"
-data_dir="$HOME/work/arangodb-data/"
-data_conf="$HOME/work/arangodb-conf/"
+build_dir="${source_dir}-build/"
+data_dir="${source_dir}-data/"
+data_conf="${source_dir}-helper/"
 
 port=8529
 
@@ -11,18 +11,17 @@ cd "$source_dir"
 clear
 
 "$build_dir/bin/arangod" \
+    --console \
     --configuration none \
     --javascript.startup-directory js \
     --javascript.app-path "js/apps" \
     --server.endpoint tcp://localhost:$port \
+    --server.disable-authentication true \
     --database.directory "$data_dir"
 rv=$?
 
 
 if (( rv != 0 )); then
-    echo
-    echo
-    echo
     echo
     echo "failed to start database!"
 fi
