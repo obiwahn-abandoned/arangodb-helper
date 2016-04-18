@@ -11,13 +11,16 @@ case $1 in
     ;;
     *)
         echo "default case:"
-        echo "return json"
+        echo "return json:"
         curl -XPOST http://localhost:$port/_api/document?collection=test -d '{ "foo" : "bar"  }'
         echo
-        echo "return velocypack"
-        echo "plain"
+        echo "--------"
+        echo "return velocypack:"
+        echo "plain:"
         curl -XPOST http://localhost:$port/_api/document?collection=test -d '{ "foo" : "bar"  }' --header "Accept: application/x-velocypack"
-        echo "hexdump"
+        echo
+        echo "--------"
+        echo "hexdump:"
         curl -XPOST http://localhost:$port/_api/document?collection=test -d '{ "foo" : "bar"  }' --header "Accept: application/x-velocypack" | hexdump -C
         echo
     ;;
