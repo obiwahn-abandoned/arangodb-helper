@@ -13,15 +13,21 @@ case $1 in
         echo "default case:"
         echo "return json:"
         curl -XPOST http://localhost:$port/_api/document?collection=test -d '{ "foo" : "bar"  }'
-        echo
         echo "--------"
         echo "return velocypack:"
+        #ramtmp="$(mktemp -p /dev/shm/)"
+        ramtmp="/dev/shm/tmp.v2j"
+        curl -XPOST http://localhost:$port/_api/document?collection=test -d '{ "foo" : "bar"  }' --header "Accept: application/x-velocypack" > "$ramtmp"
         echo "plain:"
-        curl -XPOST http://localhost:$port/_api/document?collection=test -d '{ "foo" : "bar"  }' --header "Accept: application/x-velocypack"
+        cat "$ramtmp"
         echo
         echo "--------"
         echo "hexdump:"
-        curl -XPOST http://localhost:$port/_api/document?collection=test -d '{ "foo" : "bar"  }' --header "Accept: application/x-velocypack" | hexdump -C
+        hexdump -C < "$ramtmp"
+        echo
+        echo "--------"
+        echo "v2j:"
+        ./v2j < $ramtmp
         echo
     ;;
 esac
