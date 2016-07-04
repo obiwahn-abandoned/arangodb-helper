@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source_dir="$HOME/work/arangodb"
+source_dir="$HOME/ArangoDB/arangodb"
 build_dir="${source_dir}-build/"
 data_dir="${source_dir}-data/"
 data_conf="${source_dir}-helper/"
