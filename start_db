@@ -16,7 +16,7 @@ clear
     --javascript.startup-directory js \
     --javascript.app-path "js/apps" \
     --server.endpoint tcp://localhost:$port \
-    --server.disable-authentication true \
+    --server.authentication false \
     --database.directory "$data_dir"
 rv=$?
 
