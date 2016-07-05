@@ -2,12 +2,23 @@
 
 port=8529
 
+
+vpack_invalid(){
+    curl -X POST http://localhost:$port/_admin/echo --header "Content-Type: application/x-velocypack" --data-binary "dfafas dsf"
+    #curl -X POST http://localhost:$port/_admin/json-echo --header "Content-Type: application/x-velocypack" --data-binary "dfafas dsf"
+}
+
+
+
 case $1 in
     js)
         echo "JavaScript used for Request"
         #curl -X GET http://localhost:8529/_admin/time--dump - --header "Accept:application/x-velocypack"
         curl -X GET http://localhost:$port/_admin/time --dump - --header "Accept:application/x-velocypack"
         echo
+    ;;
+    vpacki*)
+        vpack_invalid
     ;;
     *)
         echo "default case:"
