@@ -39,7 +39,7 @@ bool load_data_from_file(rocksdb::DB* db, std::string path){
 }
 
 std::size_t next_element_all(std::size_t current, std::size_t count, std::size_t prime = std::pow(2,32) -1){
-    return (current + prime) % prime;
+    return (current + prime) % count;
 }
 
 
