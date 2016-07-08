@@ -50,7 +50,7 @@ std::size_t run_test(rocksdb::DB* db, std::size_t count){
     rocksdb::Status status;
     std::string data;
 
-    std::cout << "get: " << test_count << " documents";
+    std::cout << "get: " << test_count << " documents" << std::endl;
     auto read_options = rocksdb::ReadOptions();
 
     std::size_t key = 1;
@@ -80,8 +80,10 @@ int main(){
         }
     }
 
-    std::cout << "first  run warum up: " << run_test(db, 100000000) << std::endl;
-    std::cout << "second - real test:  " << run_test(db, 100000000) << std::endl;
+    std::cout << "first  run warum up: " << std::endl
+              << "seconds taken: " << run_test(db, 100000000) << std::endl;
+    std::cout << "second - real test:  " << std::endl
+              << "seconds taken: " << run_test(db, 100000000) << std::endl;
 
     delete db;
     return 0;

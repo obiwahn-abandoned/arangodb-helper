@@ -87,7 +87,7 @@ function run_test(col){
 }
 
 function main(){
-    var col = get_collection("obi-perf-test-10", true)
+    var col = get_collection("obi-perf-test-10", false)
     if(!col){
         print("no collection")
         return 1
