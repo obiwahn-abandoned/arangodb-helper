@@ -1,5 +1,6 @@
 'use strict'
 var fs = require('fs')
+var db = require('internal').db
 
 function load_data(directory, col){
     print("get files in: " + directory  )
