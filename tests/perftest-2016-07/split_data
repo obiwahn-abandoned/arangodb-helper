@@ -4,6 +4,6 @@ for file in data*.txt; do
     mkdir "$d"
     (
         cd "$d"
-        split -d -a5 $file "$d-"
+        split -d -a5 ../$file "$d-"
     )
 done
