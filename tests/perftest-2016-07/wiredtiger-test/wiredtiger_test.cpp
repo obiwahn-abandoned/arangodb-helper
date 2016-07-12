@@ -11,10 +11,10 @@
 #include <cstdlib>
 
 extern "C" {
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <wiredtiger.h>
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <string.h>
+    #include <wiredtiger.h>
 }
 
 static const char* home;
@@ -22,14 +22,14 @@ using cclock  = std::chrono::high_resolution_clock;
 
 bool load_data_from_file(WT_CURSOR* cursor, std::string path){
     int ret = 0;
-    std::cout << "adding data from disk" << std::endl;
+    std::cout << "adding data from disk - file: " << path << std::endl;
     std::size_t index = 0;
     std::ifstream stream;
     auto start = cclock::now();
     try {
-        stream.open(path);
+        stream.open(path + std::string("/data.txt"));
         if(!stream.is_open()){
-            std::cout << "Unable to open stream!";
+            std::cout << "Unable to open stream!" << std::endl;
             return false;
         }
 
@@ -45,12 +45,12 @@ bool load_data_from_file(WT_CURSOR* cursor, std::string path){
 
             if(ret != 0){ throw std::logic_error("boom"); }
 
-            if (index % 10000 == 0){
+            if (index % 100000 == 0){
                 std::cout << index << std::endl;
             }
         }
     } catch (std::exception const& e) {
-        std::cout <<e.what();
+        std::cout << e.what() << std::endl;
         return false;
     }
     auto duration = std::chrono::duration_cast<std::chrono::seconds>(cclock::now() - start);
@@ -74,10 +74,22 @@ std::size_t run_test(WT_CURSOR* cursor, std::size_t count){
 
     std::size_t key = 1;
     for(std::size_t i = 0 ; i < test_count ; ++i){
-        ret = cursor->get_key(cursor, std::to_string(i).c_str());
-        ret = cursor->get_value(cursor, &value);
-        key = next_element_all(key, count);
+        std::string key_string = std::to_string(key);
+        cursor->set_key(cursor, key_string.c_str());
+        ret = cursor->search(cursor);
+        if (ret != 0){
+            std::cout << "key " << key << "not found  " ;
+        } else {
+            ret = cursor->get_value(cursor, &value);
+            if (ret != 0){
+                std::cout << " could not get value" << std::endl ;
+            }
+            if (i%10000 == 0){
+                std::cout << key << " -- " << value << std::endl;
+            }
+        }
         ret = cursor->reset(cursor);            /* Restart the scan. */
+        key = next_element_all(key, count);
     }
 
     auto duration = std::chrono::duration_cast<std::chrono::seconds>(cclock::now() - start);
@@ -96,7 +108,6 @@ int main(){
     WT_CONNECTION *conn;
     WT_CURSOR *cursor;
     WT_SESSION *session;
-    const char *key, *value;
     int ret;
 
     /*
@@ -121,7 +132,12 @@ int main(){
     ret = session->create(session, "table:access10", "key_format=S,value_format=S");
     ret = session->open_cursor(session, "table:access10", NULL, NULL, &cursor);
 
-    load_data_from_file(cursor, data_path);
+
+    if(false){
+        if(!load_data_from_file(cursor, data_path)){
+            return 1;
+        }
+    }
 
     std::cout << "first  run warum up: " << std::endl
               << "seconds taken: " << run_test(cursor, 100000000) << std::endl;
