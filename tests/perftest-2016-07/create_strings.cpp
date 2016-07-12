@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include <iostream>
+#include <vector>
 
 std::string gen_random(int len) {
     static const char alphanum[] =
@@ -17,17 +18,25 @@ std::string gen_random(int len) {
     return s;
 }
 
-int main(){
-
-    std::size_t file_size_gb = 10;
+void create_data(std::size_t& file_size_gb){
     std::size_t item_size = 100;
-
     file_size_gb *= 1000000000;
     std::size_t num_items=file_size_gb / item_size;
     std::cout << num_items << std::endl;
-    std::ofstream out("data.txt");
+    std::string out_file = "data";
+    out_file += std::to_string(file_size_gb);
+    out_file += ".txt";
+    std::ofstream out(out_file);
 
     for(std::size_t i = 0; i < num_items; ++i){
         out << gen_random(item_size) << std::endl;
+    }
+}
+
+
+int main(){
+    std::vector<std::size_t> sizes = {10, 30};
+    for(auto& s : sizes){
+        create_data(s);
     }
 }
