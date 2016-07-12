@@ -18,12 +18,14 @@ extern "C" {
 }
 
 static const char* home;
+using cclock  = std::chrono::high_resolution_clock;
 
 bool load_data_from_file(WT_CURSOR* cursor, std::string path){
     int ret = 0;
     std::cout << "adding data from disk" << std::endl;
     std::size_t index = 0;
     std::ifstream stream;
+    auto start = cclock::now();
     try {
         stream.open(path);
         if(!stream.is_open()){
@@ -51,6 +53,8 @@ bool load_data_from_file(WT_CURSOR* cursor, std::string path){
         std::cout <<e.what();
         return false;
     }
+    auto duration = std::chrono::duration_cast<std::chrono::seconds>(cclock::now() - start);
+    std::cout << "loading took " << duration.count() << " seconds" << std::endl;
     return true;
 }
 
@@ -60,9 +64,8 @@ std::size_t next_element_all(std::size_t current, std::size_t count, std::size_t
 
 
 std::size_t run_test(WT_CURSOR* cursor, std::size_t count){
-    const char *value;
-    using clock  = std::chrono::high_resolution_clock;
-    auto start = clock::now();
+    const char * volatile value;
+    auto start = cclock::now();
     auto test_count = count / 10;
     int ret = 0;
     std::string data;
@@ -77,7 +80,7 @@ std::size_t run_test(WT_CURSOR* cursor, std::size_t count){
         ret = cursor->reset(cursor);            /* Restart the scan. */
     }
 
-    auto duration = std::chrono::duration_cast<std::chrono::seconds>(clock::now() - start);
+    auto duration = std::chrono::duration_cast<std::chrono::seconds>(cclock::now() - start);
     return duration.count();
 }
 
@@ -118,13 +121,14 @@ int main(){
     ret = session->create(session, "table:access10", "key_format=S,value_format=S");
     ret = session->open_cursor(session, "table:access10", NULL, NULL, &cursor);
 
-    ret = conn->close(conn, NULL);
-    return (ret);
+    load_data_from_file(cursor, data_path);
 
     std::cout << "first  run warum up: " << std::endl
               << "seconds taken: " << run_test(cursor, 100000000) << std::endl;
     std::cout << "second - real test:  " << std::endl
               << "seconds taken: " << run_test(cursor, 100000000) << std::endl;
 
-    return 0;
+    ret = cursor->close(cursor);
+    ret = conn->close(conn, NULL);
+    return (ret);
 }
