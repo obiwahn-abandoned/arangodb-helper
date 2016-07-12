@@ -1,4 +1,9 @@
 #!/bin/bash
 for file in data*.txt; do
-    spilt -d -a5 $file "${file%.txt}-"
+    d="${file%.txt}"
+    mkdir "$d"
+    (
+        cd "$d"
+        spilt -d -a5 $file "$d-"
+    )
 done
