@@ -9,6 +9,7 @@
 #include <vector>
 #include "rocksdb/db.h"
 #include <cmath>
+#include <cstdlib>
 
 bool load_data_from_file(rocksdb::DB* db, std::string path){
     std::cout << "adding data from disk" << std::endl;
@@ -66,16 +67,22 @@ std::size_t run_test(rocksdb::DB* db, std::size_t count){
 
 
 int main(){
+    auto data_path = std::getenv("OBI_DATA");
+    if(!data_path){
+        std::cout << "OBI_DATA environment variable is not set!";
+        return 1;
+    }
+
     rocksdb::DB* db = nullptr;
     rocksdb::Options options;
     options.create_if_missing = true;
     std::cout << "loading database" << std::endl;
-    rocksdb::Status status = rocksdb::DB::Open(options, "/home/arango/perf-test-obi/rocksdb-test/tmp/testdb", &db);
+    rocksdb::Status status = rocksdb::DB::Open(options, std::string(data_path) + std::string("/rocksdb-data"), &db);
     assert(status.ok());
 
     bool load_from_disk = false;
     if (load_from_disk){
-        if (!load_data_from_file(db, "/home/arango/perf-test-obi/data.txt")){
+        if (!load_data_from_file(db, std::string(data_path) + std::string("/data.txt"))){
             return 1;
         }
     }
