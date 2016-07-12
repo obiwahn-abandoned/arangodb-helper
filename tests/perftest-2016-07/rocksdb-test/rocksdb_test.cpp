@@ -69,7 +69,7 @@ std::size_t run_test(rocksdb::DB* db, std::size_t count){
 int main(){
     auto data_path = std::getenv("OBI_DATA");
     if(!data_path){
-        std::cout << "OBI_DATA environment variable is not set!";
+        std::cout << "OBI_DATA environment variable is not set!"  << std::endl;
         return 1;
     }
 
