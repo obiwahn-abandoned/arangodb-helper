@@ -20,12 +20,12 @@ std::string gen_random(int len) {
 
 void create_data(std::size_t& file_size_gb){
     std::size_t item_size = 100;
-    file_size_gb *= 1000000000;
-    std::size_t num_items=file_size_gb / item_size;
+    std::size_t file_size_byte = file_size_gb * 1000000000;
+    std::size_t num_items = file_size_byte / item_size;
     std::cout << num_items << std::endl;
-    std::string out_file = "data";
+    std::string out_file = "data-";
     out_file += std::to_string(file_size_gb);
-    out_file += ".txt";
+    out_file += "GB.txt";
     std::ofstream out(out_file);
 
     for(std::size_t i = 0; i < num_items; ++i){

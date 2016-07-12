@@ -1,0 +1,4 @@
+#!/bin/bash
+for file in data*.txt; do
+    spilt -d -a5 $file "${file%.txt}-"
+done
