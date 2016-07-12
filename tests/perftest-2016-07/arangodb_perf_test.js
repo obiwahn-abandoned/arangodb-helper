@@ -1,3 +1,6 @@
+(function(){
+    
+
 'use strict'
 var fs = require('fs')
 var db = require('internal').db
@@ -100,4 +103,6 @@ function main(path, name){
     return 0
 }
 
-main()
+return main;
+
+})()
