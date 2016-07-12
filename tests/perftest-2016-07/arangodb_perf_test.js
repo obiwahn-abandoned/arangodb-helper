@@ -28,7 +28,7 @@ function load_data(directory, col){
     return col
 }
 
-function get_collection(name, drop){
+function get_collection(path, name, drop){
     print("enter create collection")
     if (drop){
         print("drop")
@@ -42,7 +42,7 @@ function get_collection(name, drop){
     }
     print("create new")
     col = db._create(name)
-    col = load_data('/home/arango/perf-test-obi/testdata-10', col)
+    col = load_data(path, col)
     return col
 }
 
@@ -86,8 +86,8 @@ function run_test(col){
     return (time() - start)
 }
 
-function main(){
-    var col = get_collection("obi-perf-test-10", false)
+function main(path, name){
+    var col = get_collection(path, name, false)
     if(!col){
         print("no collection")
         return 1
