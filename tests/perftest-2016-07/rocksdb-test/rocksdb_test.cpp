@@ -11,6 +11,8 @@
 #include <cmath>
 #include <cstdlib>
 
+using cclock = std::chrono::high_resolution_clock;
+
 bool load_data_from_file(rocksdb::DB* db, std::string path){
     std::cout << "adding data from disk" << std::endl;
     std::size_t index = 0;
@@ -23,6 +25,7 @@ bool load_data_from_file(rocksdb::DB* db, std::string path){
             return false;
         }
 
+    	auto start = cclock::now();
         std::istream_iterator<std::string> stream_it(stream);
         for(;stream_it != std::istream_iterator<std::string>(); ++stream_it ){
             auto key = std::to_string(index++);
@@ -32,6 +35,8 @@ bool load_data_from_file(rocksdb::DB* db, std::string path){
                 std::cout << index << std::endl;
             }
         }
+    	auto duration = std::chrono::duration_cast<std::chrono::seconds>(cclock::now() - start);
+    	std::cout << "loading of data form file " << duration.count() << std::endl;
     } catch (std::exception const& e) {
         std::cout <<e.what();
         return false;
@@ -39,14 +44,8 @@ bool load_data_from_file(rocksdb::DB* db, std::string path){
     return true;
 }
 
-std::size_t next_element_all(std::size_t current, std::size_t count, std::size_t prime = std::pow(2,32) -1){
-    return (current + prime) % count;
-}
-
-
-std::size_t run_test(rocksdb::DB* db, std::size_t count){
-    using clock  = std::chrono::high_resolution_clock;
-    auto start = clock::now();
+std::size_t run_test(rocksdb::DB* db, std::size_t(*next_key)(std::size_t, std::size_t), std::size_t count){
+    auto start = cclock::now();
     auto test_count = count / 10;
     rocksdb::Status status;
     std::string data;
@@ -56,13 +55,24 @@ std::size_t run_test(rocksdb::DB* db, std::size_t count){
 
     std::size_t key = 1;
     for(std::size_t i = 0 ; i < test_count ; ++i){
-        status =  db->Get(read_options, std::to_string(i), &data);
-        key = next_element_all(key, count);
+        status =  db->Get(read_options, std::to_string(key), &data);
+        key = next_key(key, count);
+
+	if(i<10){ std::cout << key <<  " -- " << data << std::endl; }
     }
 
-    auto duration = std::chrono::duration_cast<std::chrono::seconds>(clock::now() - start);
+
+    auto duration = std::chrono::duration_cast<std::chrono::seconds>(cclock::now() - start);
 
     return duration.count();
+}
+
+std::size_t next_key_max_all(std::size_t current, std::size_t count){
+    return (current + 47) % count;
+}
+
+std::size_t next_key_max_1(std::size_t current, std::size_t count){
+    return (current + 47 * 100) % count;
 }
 
 
@@ -87,10 +97,17 @@ int main(){
         }
     }
 
+    std::cout << "next_key_max_all:" << std::endl;
     std::cout << "first  run warum up: " << std::endl
-              << "seconds taken: " << run_test(db, 100000000) << std::endl;
+              << "seconds taken: " << run_test(db, &next_key_max_all ,300000000) << std::endl;
     std::cout << "second - real test:  " << std::endl
-              << "seconds taken: " << run_test(db, 100000000) << std::endl;
+              << "seconds taken: " << run_test(db, &next_key_max_all, 300000000) << std::endl;
+
+    std::cout << std::endl << "next_key_max_2:" << std::endl;
+    std::cout << "first  run warum up: " << std::endl
+              << "seconds taken: " << run_test(db, &next_key_max_1 ,300000000) << std::endl;
+    std::cout << "second - real test:  " << std::endl
+              << "seconds taken: " << run_test(db, &next_key_max_1, 300000000) << std::endl;
 
     delete db;
     return 0;

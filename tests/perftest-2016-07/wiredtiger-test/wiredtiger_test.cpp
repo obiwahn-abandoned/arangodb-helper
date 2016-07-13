@@ -54,7 +54,7 @@ bool load_data_from_file(WT_CURSOR* cursor, std::string path){
         return false;
     }
     auto duration = std::chrono::duration_cast<std::chrono::seconds>(cclock::now() - start);
-    std::cout << "loading took " << duration.count() << " seconds" << std::endl;
+    std::cout << "loading from file took " << duration.count() << " seconds" << std::endl;
     return true;
 }
 
@@ -63,7 +63,10 @@ std::size_t next_element_all(std::size_t current, std::size_t count, std::size_t
 }
 
 
-std::size_t run_test(WT_CURSOR* cursor, std::size_t count){
+std::size_t run_test(WT_CURSOR* cursor
+                    ,std::size_t(*next_key)(std::size_t, std::size_t)
+                    ,std::size_t count
+                    ){
     const char * volatile value;
     auto start = cclock::now();
     auto test_count = count / 10;
@@ -78,23 +81,38 @@ std::size_t run_test(WT_CURSOR* cursor, std::size_t count){
         cursor->set_key(cursor, key_string.c_str());
         ret = cursor->search(cursor);
         if (ret != 0){
-            std::cout << "key " << key << "not found  " ;
+            std::cout << "key " << key << " not found " << std::endl ;
+            std::cout << "this is unexpected! exiting!" << std::endl;
+            std::exit(42);
         } else {
             ret = cursor->get_value(cursor, &value);
             if (ret != 0){
                 std::cout << " could not get value" << std::endl ;
             }
-            if (i%10000 == 0){
-                std::cout << key << " -- " << value << std::endl;
+            //if (i%10000 == 0){
+            //    std::cout << key << " -- " << value << std::endl;
+            //}
+            if (i < 10){
+                    std::cout << key << " -- " << value << std::endl;
             }
         }
-        ret = cursor->reset(cursor);            /* Restart the scan. */
-        key = next_element_all(key, count);
+        //ret = cursor->reset(cursor);            /* Restart the scan. */
+        key = next_key(key, count);
     }
 
     auto duration = std::chrono::duration_cast<std::chrono::seconds>(cclock::now() - start);
     return duration.count();
 }
+
+
+std::size_t next_key_max_all(std::size_t current, std::size_t count){
+    return (current + 47) % count;
+}
+
+std::size_t next_key_max_1(std::size_t current, std::size_t count){
+    return (current + 47 * 100) % count;
+}
+
 
 
 int main(){
@@ -131,6 +149,10 @@ int main(){
 
     ret = session->create(session, "table:access10", "key_format=S,value_format=S");
     ret = session->open_cursor(session, "table:access10", NULL, NULL, &cursor);
+    if ( ret != 0){
+        std::cout << "failed to get cursor" << std::endl;
+        return 1;
+    }
 
 
     if(false){
@@ -139,10 +161,17 @@ int main(){
         }
     }
 
+    std::cout << "next_key_max_all:" << std::endl;
     std::cout << "first  run warum up: " << std::endl
-              << "seconds taken: " << run_test(cursor, 100000000) << std::endl;
+              << "seconds taken: " << run_test(cursor, &next_key_max_all ,300000000) << std::endl;
     std::cout << "second - real test:  " << std::endl
-              << "seconds taken: " << run_test(cursor, 100000000) << std::endl;
+              << "seconds taken: " << run_test(cursor, &next_key_max_all, 300000000) << std::endl;
+
+    std::cout << std::endl << "next_key_max_1:" << std::endl;
+    std::cout << "first  run warum up: " << std::endl
+              << "seconds taken: " << run_test(cursor, &next_key_max_1 ,300000000) << std::endl;
+    std::cout << "second - real test:  " << std::endl
+              << "seconds taken: " << run_test(cursor, &next_key_max_1, 300000000) << std::endl;
 
     ret = cursor->close(cursor);
     ret = conn->close(conn, NULL);

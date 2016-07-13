@@ -16,6 +16,7 @@
         print("OBI" + col)
         var buffer;
         var uid = 0;
+        var start = time()
         files.forEach( function(file){
             print("reading: " + file)
             buffer=fs.readFileSync(directory + fs.pathSeparator + file)
@@ -28,6 +29,7 @@
                 uid += 1;
             })
         })
+        print(" reading files took: " + (time() - start).toString() + " seconds")
         return col
     }
 
@@ -94,7 +96,7 @@
 		})
 	}
 
-	var yield_next = create_yield_next(1,count)
+	//var yield_next = create_yield_next(1,count)
         var key = 1;
 
         var test_count = count / 10;
@@ -105,7 +107,7 @@
 		print( key.toString() + " -- " + doc["data"] );
 	    }
 	    if (i % 100000 == 0){print(i)}
-            key = next_key_max_1(key,count);
+            key = next_key_max_all(key,count);
 	    //print(key);
 	    //key = yield_next()
 	    
@@ -124,7 +126,7 @@
         var duration = run_test(col)
 
         print("total time taken: " + duration.toString())
-        print(col.figures())
+        //print(col.figures())
         return 0
     }
 
