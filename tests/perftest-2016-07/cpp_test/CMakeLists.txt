@@ -9,9 +9,13 @@ find_package(Threads REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(BZip2 REQUIRED)
 
-add_executable(perf src/main.cpp)
+add_executable(perf
+    src/main.cpp
+    src/wiredtiger.cpp
+)
 target_link_libraries(perf PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/rocksdb/librocksdb.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/wiredtiger/.libs/libwiredtiger.a
     ${ZLIB_LIBRARIES}
     ${BZIP2_LIBRARIES}
     snappy
@@ -21,8 +25,9 @@ target_link_libraries(perf PRIVATE
 )
 
 target_include_directories(perf PRIVATE
+    src
     ${Boost_INCLUDE_DIRS}
+    ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/
     ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/rocksdb/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/wiredtiger
 )
 

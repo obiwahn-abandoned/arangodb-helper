@@ -13,7 +13,7 @@ struct options {
     bool drop_data;
 };
 
-options parse_options(int ac, char* av[]){
+inline options parse_options(int ac, char* av[]){
     options opts;
 
     po::options_description desc("Allowed Options");

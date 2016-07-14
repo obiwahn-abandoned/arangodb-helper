@@ -1,6 +1,9 @@
 #include "options.h"
+#include "wiredtiger.h"
 #include <iostream>
 #include <iomanip>
+#include "shared.h"
+
 
 
 int main(int argc, char* argv[]){
@@ -11,4 +14,5 @@ int main(int argc, char* argv[]){
     std::cout << "source:             " << opts.data_source << std::endl;
     std::cout << "test:               " << opts.test << std::endl;
 
+    run_tiger(opts);
 }
