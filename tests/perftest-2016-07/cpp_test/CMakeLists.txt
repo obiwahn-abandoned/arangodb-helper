@@ -15,7 +15,7 @@ add_executable(perf
 )
 target_link_libraries(perf PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/rocksdb/librocksdb.a
-    ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/wiredtiger/.libs/libwiredtiger.a
+    ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/wiredtiger-build/.libs/libwiredtiger.a
     ${ZLIB_LIBRARIES}
     ${BZIP2_LIBRARIES}
     snappy
