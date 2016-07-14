@@ -1,0 +1,6 @@
+[submodule "tests/perftest-2016-07/cpp_test/3rdparty/wiredtiger"]
+	path = tests/perftest-2016-07/cpp_test/3rdparty/wiredtiger
+	url = https://github.com/wiredtiger/wiredtiger
+[submodule "tests/perftest-2016-07/cpp_test/3rdparty/rocksdb"]
+	path = tests/perftest-2016-07/cpp_test/3rdparty/rocksdb
+	url = https://github.com/facebook/rocksdb
