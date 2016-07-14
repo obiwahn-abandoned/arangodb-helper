@@ -1,5 +1,6 @@
 a.out
 build
 *-build
+wiredtiger-build
 tests/perftest-2016-07/rocksdb-test/rocksdb
 tests/perftest-2016-07/wiredtiger-test/wiredtiger

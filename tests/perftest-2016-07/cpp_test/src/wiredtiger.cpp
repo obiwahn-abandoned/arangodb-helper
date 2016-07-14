@@ -1,15 +1,6 @@
 #include "wiredtiger.h"
 #include "shared.h"
 
-//extern "C" {
-      #include <wiredtiger/wiredtiger.h>
-//    #include "options.h"
-//    #include <stdio.h>
-//    #include <stdlib.h>
-//    #include <string.h>
-//}
-
-
 #include <chrono>
 #include <boost/filesystem.hpp>
 #include <fstream>

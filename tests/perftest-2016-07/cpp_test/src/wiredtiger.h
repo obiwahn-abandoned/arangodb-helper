@@ -1,7 +1,7 @@
 #pragma once
 
 extern "C" {
-    #include <wiredtiger/wiredtiger.h>
+    #include <wiredtiger-build/wiredtiger.h>
 }
 
 #include "options.h"
