@@ -93,7 +93,8 @@ int run_tiger(options opts)
         std::cout << "not a regular file!" << std::endl;
         std::exit(1);
     } else {
-        collection_name = data_path.stem().string();
+        //collection_name = data_path.stem().string();
+        collection_name = std::string("data30");
         std::cout << "collection name: " << collection_name << std::endl;
     }
 
@@ -154,9 +155,9 @@ int run_tiger(options opts)
 
     std::cout << "algorithm:" << opts.test << std::endl;
     std::cout << "first  run warum up: " << std::endl
-              << "seconds taken: " << run_test(get_next_key_algorithm(opts.test) ,100) << std::endl;
+              << "seconds taken: " << run_test(get_next_key_algorithm(opts.test) ,30*1000*1000) << std::endl;
     std::cout << "second - real test:  " << std::endl
-              << "seconds taken: " << run_test(get_next_key_algorithm(opts.test) , 100) << std::endl;
+              << "seconds taken: " << run_test(get_next_key_algorithm(opts.test) , 30*1000*1000) << std::endl;
 
 
     ret = conn->close(conn, NULL);
