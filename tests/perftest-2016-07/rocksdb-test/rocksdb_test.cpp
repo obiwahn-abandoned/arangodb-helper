@@ -46,7 +46,8 @@ bool load_data_from_file(rocksdb::DB* db, std::string path){
 
 std::size_t run_test(rocksdb::DB* db, std::size_t(*next_key)(std::size_t, std::size_t), std::size_t count){
     auto start = cclock::now();
-    auto test_count = count / 10;
+//auto test_count = count / 10;
+    auto test_count = count;
     rocksdb::Status status;
     std::string data;
 
@@ -92,22 +93,27 @@ int main(){
 
     bool load_from_disk = false;
     if (load_from_disk){
-        if (!load_data_from_file(db, std::string(data_path) + std::string("/data.txt"))){
+        if (!load_data_from_file(db, std::string(data_path) + std::string("/data30GB.txt"))){
             return 1;
         }
     }
 
+    std::size_t number_of_requests = 300 * 1000 *1000;
+
     std::cout << "next_key_max_all:" << std::endl;
     std::cout << "first  run warum up: " << std::endl
-              << "seconds taken: " << run_test(db, &next_key_max_all ,300000000) << std::endl;
+              << "seconds taken: " << run_test(db, &next_key_max_all, number_of_requests) << std::endl;
     std::cout << "second - real test:  " << std::endl
-              << "seconds taken: " << run_test(db, &next_key_max_all, 300000000) << std::endl;
+              << "seconds taken: " << run_test(db, &next_key_max_all, number_of_requests) << std::endl;
+    std::cout << "third - real test:  " << std::endl
+              << "seconds taken: " << run_test(db, &next_key_max_all, number_of_requests) << std::endl;
 
-    std::cout << std::endl << "next_key_max_2:" << std::endl;
-    std::cout << "first  run warum up: " << std::endl
-              << "seconds taken: " << run_test(db, &next_key_max_1 ,300000000) << std::endl;
-    std::cout << "second - real test:  " << std::endl
-              << "seconds taken: " << run_test(db, &next_key_max_1, 300000000) << std::endl;
+
+    //std::cout << std::endl << "next_key_max_2:" << std::endl;
+    //std::cout << "first  run warum up: " << std::endl
+    //          << "seconds taken: " << run_test(db, &next_key_max_1 ,300000000) << std::endl;
+    //std::cout << "second - real test:  " << std::endl
+    //          << "seconds taken: " << run_test(db, &next_key_max_1, 300000000) << std::endl;
 
     delete db;
     return 0;
