@@ -1,0 +1,18 @@
+#!/bin/bash
+
+find_source_dir(){
+    local source_="${BASH_SOURCE[0]}"
+    local dir_
+    while [ -h "$source_" ]; do # resolve $SOURCE until the file is no longer a symlink
+      dir_="$( cd -P "$( dirname "$source_" )" && pwd )"
+      source_="$(readlink "$source_")"
+      [[ $source_ != /* ]] && source_="$dir_/$source_" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+    done
+    dir_="$( cd -P "$( dirname "$source_" )" && pwd )"
+    echo "$dir_"
+}
+
+script=$(basename ${BASH_SOURCE[0]})
+cd "$(find_source_dir)/../scripts" || exit 1
+
+./$script "$@"
