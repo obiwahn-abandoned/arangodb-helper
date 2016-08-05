@@ -42,7 +42,7 @@
         var col = db[name];
         if (col) {
             print("returning existing collection")
-	    print("loading collection")
+        print("loading collection")
             var start = time()
             col.load()
             print(" loading took " + (time() - start).toString() + " seconds")
@@ -78,39 +78,40 @@
         function next_key_max_all(current, count){
             return (( current + 47 ) % count)
         }
-        
-	function next_key_max_1(current, count){
-            return (( current + 47 * 100 ) % count)
+
+        function next_key_max_1(current, count){
+                return (( current + 47 * 100 ) % count)
+            }
+
+        function next_key_lcg(current){
+            //https://en.wikipedia.org/wiki/Linear_congruential_generator
+            return (48271 * current % 2147483647);
         }
 
-	function next_key_lcg(current){
-		//https://en.wikipedia.org/wiki/Linear_congruential_generator
-		return (48271 * current % 2147483647);
-	}
+        function create_yield_next(initial, count){
+            var current = initial;
+            return (function(){
+                current = next_key_lcg(current) % count;
+                return current % count;
+            })
+        }
 
-	function create_yield_next(initial, count){
-		var current = initial;
-		return (function(){
-			current = next_key_lcg(current) % count;
-			return current % count;
-		})
-	}
-
-	//var yield_next = create_yield_next(1,count)
+        //var yield_next = create_yield_next(1,count)
         var key = 1;
 
+        //var test_count = count / 10;
         var test_count = count / 10;
         print(test_count)
         for(var i = 0; i < test_count; ++i){
             var doc = col.document(key.toString())
-	    if(i < 10){
-		print( key.toString() + " -- " + doc["data"] );
-	    }
-	    if (i % 100000 == 0){print(i)}
-            key = next_key_max_all(key,count);
-	    //print(key);
-	    //key = yield_next()
-	    
+        if(i < 10){
+        print( key.toString() + " -- " + doc["data"] );
+        }
+        //if (i % 100000 == 0){print(i)}
+        key = next_key_max_all(key,count);
+        //print(key);
+        //key = yield_next()
+
         }
 
         return (time() - start)
@@ -121,11 +122,14 @@
         if(!col){
             print("no collection")
             return 1
-	}
-        
-        var duration = run_test(col)
+        }
 
-        print("total time taken: " + duration.toString())
+        var duration = run_test(col)
+        print("1 total time taken: " + duration.toString())
+        duration = run_test(col)
+        print("2 total time taken: " + duration.toString())
+        duration = run_test(col)
+        print("3 total time taken: " + duration.toString())
         //print(col.figures())
         return 0
     }

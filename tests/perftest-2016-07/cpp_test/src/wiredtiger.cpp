@@ -6,6 +6,16 @@
 #include <fstream>
 namespace fs = boost::filesystem;
 using cclock  = std::chrono::high_resolution_clock;
+using namespace std::literals;
+using std::string;
+
+
+static void check_exit_on_fail(int ret){
+    if(ret != 0){
+        std::cout << "exit: " << __LINE__ << wiredtiger_strerror(ret) << std::endl;
+        std::exit(ret);
+    }
+}
 
 static const char *home;
 
@@ -14,13 +24,25 @@ WT_CURSOR *cursor;
 WT_SESSION *session;
 const char *key, *value;
 
+
+int
+get_stat(WT_CURSOR *cursor, int stat_field, uint64_t *valuep)
+{
+        const char *desc, *pvalue;
+        int ret;
+        cursor->set_key(cursor, stat_field);
+        if ((ret = cursor->search(cursor)) != 0)
+                return (ret);
+        return (cursor->get_value(cursor, &desc, &pvalue, valuep));
+}
+
 static std::size_t
 run_test(std::size_t(*next_key)(std::size_t, std::size_t)
         ,std::size_t count
         ){
 
     auto start = cclock::now();
-    auto test_count = count / 10;
+    std::size_t test_count = count; // / 10;
     int ret = 0;
 
     std::string data;
@@ -40,14 +62,14 @@ run_test(std::size_t(*next_key)(std::size_t, std::size_t)
             if (ret != 0){
                 std::cout << " could not get value" << std::endl ;
             }
-            //if (i%10000 == 0){
-            //    std::cout << key << " -- " << value << std::endl;
-            //}
+            if (i % 1000000 == 0){
+                std::cout << key << " -- " << value << std::endl;
+            }
             if (i < 10){
                     std::cout << key << " -- " << value << std::endl;
             }
         }
-        //ret = cursor->reset(cursor);            /* Restart the scan. */
+        ret = cursor->reset(cursor);
         key = next_key(key, count);
     }
 
@@ -70,7 +92,7 @@ int run_tiger(options opts)
     home = opts.db_directory.c_str();
 
 	/* Open a connection to the database, creating it if necessary. */
-	if ((ret = wiredtiger_open(home, NULL, "create", &conn)) != 0 ||
+	if ((ret = wiredtiger_open(home, NULL, "create,cache_size=25GB", &conn)) != 0 ||
 	    (ret = conn->open_session(conn, NULL, NULL, &session)) != 0) {
 		fprintf(stderr, "Error connecting to %s: %s\n",
 		    home, wiredtiger_strerror(ret));
@@ -84,24 +106,26 @@ int run_tiger(options opts)
         std::cout << "not a regular file!" << std::endl;
         std::exit(1);
     } else {
-        collection_name = data_path.stem().string();
+        //collection_name = data_path.stem().string();
+        collection_name = "data30"s;
         std::cout << "collection name: " << collection_name << std::endl;
     }
+    auto table = "table:"s + collection_name;
 
-    std::string table = std::string("table:") + collection_name;
+    if(opts.drop_data){
+        ret = session->drop(session, table.c_str(), "force=true");
+        check_exit_on_fail(ret);
+    }
+
 	ret = session->create(session
                          ,table.c_str()
 	                     ,"key_format=S,value_format=S");
-    if(ret != 0){ std::cout << "exit: " << __LINE__ << wiredtiger_strerror(ret) << std::endl; std::exit(ret);}
+    check_exit_on_fail(ret);
 	/*! [access example table create] */
 
 	/*! [access example cursor open] */
-	ret = session->open_cursor(session
-	                          ,table.c_str()
-                              ,NULL
-                              ,NULL
-                              ,&cursor);
-    if(ret != 0){ std::cout << "exit: " << __LINE__ << wiredtiger_strerror(ret) << std::endl; std::exit(ret);}
+	ret = session->open_cursor(session, table.c_str(), NULL, NULL, &cursor);
+    check_exit_on_fail(ret);
 
 
 
@@ -119,6 +143,8 @@ int run_tiger(options opts)
                 return false;
             }
 
+            ret = session->begin_transaction(session, NULL);
+            check_exit_on_fail(ret);
             std::istream_iterator<std::string> stream_it(stream);
             for(;stream_it != std::istream_iterator<std::string>(); ++stream_it ){
 
@@ -129,9 +155,13 @@ int run_tiger(options opts)
                 ret = cursor->insert(cursor);
                 //ret = cursor->reset(cursor);            /* Restart the scan. */
 
-                if(ret != 0){ throw std::logic_error("boom"); }
+                check_exit_on_fail(ret);
 
-                if (index % 100000 == 0){
+                if (index % 1000000 == 0){
+                    ret = session->commit_transaction(session, NULL);
+                    check_exit_on_fail(ret);
+                    ret = session->begin_transaction(session, NULL);
+                    check_exit_on_fail(ret);
                     std::cout << index << std::endl;
                 }
             }
@@ -139,18 +169,34 @@ int run_tiger(options opts)
             std::cout << e.what() << std::endl;
             return false;
         }
+        ret = session->commit_transaction(session, NULL);
+        check_exit_on_fail(ret);
         auto duration = std::chrono::duration_cast<std::chrono::seconds>(cclock::now() - start);
         std::cout << "loading from file took " << duration.count() << " seconds" << std::endl;
     }
+    ret = cursor->close(cursor);
+    check_exit_on_fail(ret);
+	ret = session->open_cursor(session, table.c_str(), NULL, NULL, &cursor);
+    check_exit_on_fail(ret);
 
-    std::cout << "algorithm:" << opts.test << std::endl;
-    std::cout << "first  run warum up: " << std::endl
-              << "seconds taken: " << run_test(get_next_key_algorithm(opts.test) ,100) << std::endl;
-    std::cout << "second - real test:  " << std::endl
-              << "seconds taken: " << run_test(get_next_key_algorithm(opts.test) , 100) << std::endl;
+    std::cout << "get statistics " << std::endl;
+    uint64_t number_of_key_value_pairs = 300 * 1000 * 1000;
+    //ret = get_stat(cursor, WT_STAT_DSRC_BTREE_ENTRIES, &number_of_key_value_pairs);
+    check_exit_on_fail(ret);
 
+    std::cout << "number of entries in table: " << number_of_key_value_pairs << std::endl;
+    if (opts.test.compare("all") != 0){
+        std::cout << "algorithm:" << opts.test << std::endl;
+        std::cout << "first  run warum up: " << std::endl
+                  << "seconds taken: " << run_test(get_next_key_algorithm(opts.test), number_of_key_value_pairs) << std::endl;
+        std::cout << "second - real test:  " << std::endl
+                  << "seconds taken: " << run_test(get_next_key_algorithm(opts.test), number_of_key_value_pairs) << std::endl;
+    }
 
+    ret = session->close(session, NULL);
+    check_exit_on_fail(ret);
     ret = conn->close(conn, NULL);
+    check_exit_on_fail(ret);
 
 	return (ret);
 }

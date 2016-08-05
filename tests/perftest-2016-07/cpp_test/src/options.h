@@ -27,9 +27,9 @@ inline options parse_options(int ac, char* av[]){
           po::value<std::string>(&opts.db_directory),
           "path to storage directory")
         ( "database,d",
-          po::value<std::string>(&opts.database)->default_value("arangodb"),
-          "database to use")
-        ( "test,t",
+          po::value<std::string>(&opts.database)->default_value("wiredtiger"),
+          "database to use: wiredtiger")
+        ( "algorithm,a",
           po::value<std::string>(&opts.test)->default_value("all"),
           "test to run")
         ( "drop,r",
