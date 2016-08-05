@@ -1,9 +1,6 @@
 #!/bin/bash
 
-project_root="$HOME/ArangoDB/arangodb"
-
-#project_root="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
-build_dir="${project_root}-build"
+source scripts-lib.bash
 
 args=()
 cm_flags=()

@@ -1,13 +1,7 @@
 #!/bin/bash
 
-source_dir="$HOME/ArangoDB/arangodb"
-build_dir="${source_dir}-build/"
-data_dir="${source_dir}-data/"
-data_conf="${source_dir}-helper/"
+source scripts-lib.bash
 
-port=8529
-
-cd "$source_dir"
 clear
 
 "$build_dir/bin/arangod" \
@@ -15,7 +9,7 @@ clear
     --configuration none \
     --javascript.startup-directory js \
     --javascript.app-path "js/apps" \
-    --server.endpoint tcp://localhost:$port \
+    --server.endpoint tcp://$server \
     --server.authentication false \
     --database.directory "$data_dir"
 rv=$?

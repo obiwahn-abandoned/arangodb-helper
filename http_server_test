@@ -1,15 +1,8 @@
 #!/bin/bash
 
-source_dir="$HOME/ArangoDB/arangodb"
-build_dir="${source_dir}-build/"
-data_dir="${source_dir}-data/"
-data_conf="${source_dir}-helper/"
-
-port=8529
+source scripts-lib.bash
 
 cd "$source_dir"
 
-#all# scripts/unittest http_server --server tcp://127.0.0.1:8529/
-#scripts/unittest http_server --server tcp://127.0.0.1:8529/ --test api-export-spec-timecritical-noncluster.rb
+#scripts/unittest http_server --server tcp://$server_ip:server_port/ --test api-export-spec-timecritical-noncluster.rb
 scripts/unittest http_server --test api-export-spec-timecritical-noncluster.rb
-

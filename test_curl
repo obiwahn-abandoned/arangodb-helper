@@ -1,11 +1,9 @@
 #!/bin/bash
 
-port=8529
-
+source scripts-lib.bash
 
 vpack_invalid(){
-    curl -X POST http://localhost:$port/_admin/echo --header "Content-Type: application/x-velocypack" --data-binary "dfafas dsf"
-    #curl -X POST http://localhost:$port/_admin/json-echo --header "Content-Type: application/x-velocypack" --data-binary "dfafas dsf"
+    curl -X POST http://$server/_admin/echo --header "Content-Type: application/x-velocypack" --data-binary "dfafas dsf"
 }
 
 
@@ -13,8 +11,7 @@ vpack_invalid(){
 case $1 in
     js)
         echo "JavaScript used for Request"
-        #curl -X GET http://localhost:8529/_admin/time--dump - --header "Accept:application/x-velocypack"
-        curl -X GET http://localhost:$port/_admin/time --dump - --header "Accept:application/x-velocypack"
+        curl -X GET http://$server/_admin/time --dump - --header "Accept:application/x-velocypack"
         echo
     ;;
     vpacki*)
@@ -23,12 +20,12 @@ case $1 in
     *)
         echo "default case:"
         echo "return json:"
-        curl -XPOST http://localhost:$port/_api/document?collection=test -d '{ "foo" : "bar"  }'
+        curl -XPOST http://$server/_api/document?collection=test -d '{ "foo" : "bar"  }'
         echo "--------"
         echo "return velocypack:"
         #ramtmp="$(mktemp -p /dev/shm/)"
         ramtmp="/dev/shm/tmp.v2j"
-        curl -XPOST http://localhost:$port/_api/document?collection=test -d '{ "foo" : "bar"  }' --header "Accept: application/x-velocypack" > "$ramtmp"
+        curl -XPOST http://$server/_api/document?collection=test -d '{ "foo" : "bar"  }' --header "Accept: application/x-velocypack" > "$ramtmp"
         echo "plain:"
         cat "$ramtmp"
         echo

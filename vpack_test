@@ -1,0 +1,13 @@
+#!/bin/bash
+
+source scripts-lib.bash
+
+case $1 in
+    *--server)
+        echo "SERVER ##################################################################"
+        ./scripts/unittest shell_client --server tcp://$server --test js/client/tests/shell/shell-vpack.js
+    ;;
+    *)
+        ./scripts/unittest shell_client --test js/client/tests/shell/shell-vpack.js
+    ;;
+esac
