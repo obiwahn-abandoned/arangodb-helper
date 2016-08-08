@@ -1,0 +1,17 @@
+#!/bin/bash
+
+source scripts-lib.bash
+
+cd $source_dir
+
+program="arangod"
+
+if [[ -n $1 ]]; then
+    cmd_file="$1"
+else
+    cmd_file="$helper_dir/vpack.gdb"
+fi
+
+gdb -command="$cmd_file" --args "$binary_dir/arangod" "$data_dir"
+echo "gdb -command=$cmd_file --args $binary_dir/arangod $data_dir"
+
