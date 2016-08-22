@@ -12,6 +12,8 @@ else
     cmd_file="$helper_dir/vpack.gdb"
 fi
 
-gdb -command="$cmd_file" --args "$binary_dir/arangod" "$data_dir"
-echo "gdb -command=$cmd_file --args $binary_dir/arangod $data_dir"
+set -x
+gdb -command="$cmd_file" --args "$binary_dir/arangod" "$data_dir" --server.endpoint vpp+tcp://localhost:8529 --log.level communication=debug
+set +x
+echo "gdb -command=$cmd_file --args $binary_dir/arangod $data_dir --server.endpoint vpp+tcp://localhost:8529"
 
