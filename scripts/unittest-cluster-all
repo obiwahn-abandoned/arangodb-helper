@@ -1,0 +1,94 @@
+#!/bin/bash
+
+#requirements bash and gnu parallel
+
+# script for runnung all unititests
+
+job=1
+cluster="true"
+maxload=10
+dryrun=false
+
+src_dir="$HOME/ArangoDB"
+build_dir="$HOME/ArangoDB/build"
+
+prefix="unit"
+test_prefix="${prefix}test"
+main_log="$prefix-main.log"
+
+
+
+cd $src_dir || { echo "could not change to src dir!"; exit 1; }
+
+echo "Test result overview" >  "$main_log"
+echo "====================" >> "$main_log"
+echo -n "Tests started:"    >> "$main_log"
+date >> "$main_log"
+
+rm -f "$test_prefix"*.log
+
+build(){
+    if [[ ! -d $build_dir ]] ; then
+      mkdir $build_dir && cd $build_dir \
+      cmake -C ~/.cmake_gcc_asan_O0 .. || { echo "unable to configure build"; exit 1; }
+    else
+      cdi $build_dir || { echo "unable to change into build dir"; exit 1; }
+    fi
+    make -j64 || { echo "build failed"; exit 1; }
+    cd -
+}
+
+for item in arangod arangosh rspec ruby; do
+    killall -9 $item &>> /dev/null
+done
+
+run_job(){
+    IFS=' ' read -r -a cmd <<< $1
+    local log=${test_prefix}-${cmd[0]}.log
+    echo "####################################################################"
+    echo "command '${cmd[@]}' log '${log}'"
+    set -o pipefail
+    set -x
+    if ! $dryrun; then
+        if ! ./scripts/unittest "${cmd[@]}" 2>&1 | tee -a "$log"; then
+            echo "##############" >> "$main_log"
+            echo "${cmd[@]}" >> "$main_log"
+            cat "$log" >> "$main_log"
+        fi
+    fi
+    set +x
+    echo "####################################################################"
+}
+export -f run_job
+export prefix test_prefix main_log cluster dryrun
+
+touch testsStarted
+
+parallel -v -v\
+    --no-run-if-empty \
+    --jobs $job \
+    --load $maxload \
+    run_job <<HERE
+resilience --test js/server/tests/resilience/moving-shards-cluster.js
+resilience --test js/server/tests/resilience/resilience-synchronous-repl-cluster.js
+shell_client --cluster $cluster
+shell_server --cluster $cluster
+http_server --cluster $cluster
+ssl_server --cluster $cluster
+shell_server_aql --cluster $cluster --testBuckets 4/0
+shell_server_aql --cluster $cluster --testBuckets 4/1
+shell_server_aql --cluster $cluster --testBuckets 4/2
+shell_server_aql --cluster $cluster --testBuckets 4/3
+dump --cluster $cluster
+server_http --cluster $cluster
+agency
+HERE
+
+
+# Replace with mutt command later:
+echo -n "Tests finished: " >> "$main_log"
+date >> "$main_log"
+mutt -s "Test results are in" < "$main_log" jan.uhde@arangodb.com \
+echo Ready.
+
+rm testsStarted
