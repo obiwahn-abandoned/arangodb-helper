@@ -2,7 +2,7 @@
 filename="$1"
 pid="$(pidof arangod)"
 collection="${2:-ulf}"
-port="${3:-5555}"
+port="${3:-6666}"
 
 page_size_bytes="$(getconf PAGESIZE)" 
 page_size_KiB="$((page_size_bytes / 1024))" 
