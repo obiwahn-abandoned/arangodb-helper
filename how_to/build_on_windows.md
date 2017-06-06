@@ -19,7 +19,6 @@ copy "dlls" into /cygdrive/c/obi/arangodb/build/RelWithDebInfo
 
 In Visual Studio (arangod properties):
 ```
-set working dir to /cygdrive/c/obi/arangodb/etc/relative
-add commandline arguments: --console -c /cygdrive/c/obi/arangodb/etc/relative/arango.conf
+set working dir to /cygdrive/c/obi/arangodb
+add commandline arguments: --console -c /cygdrive/c/obi/arangodb/etc/relative/arango.conf /cygdrive/c/obi/arangodb-database
 ```
-
