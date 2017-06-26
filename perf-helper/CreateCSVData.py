@@ -39,4 +39,4 @@ def create(basename, size_in_gb, gen):
     return 0
 
 if __name__ == "__main__":
-    sys.exit(create("outfile",17,default_generator()))
+    sys.exit(create("outfile",30,default_generator()))

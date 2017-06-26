@@ -41,6 +41,12 @@ get_meminfo_status(){
 	echo "VmSize $VmSize VmRSS $VmRSS- KiB"
 }
 
+get_ioinfo_iotop(){
+    #tid prio user disk # write # swapin %io command
+    local topline="$(iotop -k -qqq -n1 -P -p $1)"
+    awk '{print "read " $4"  write "$6}' <<< "$topline"
+}
+
 run_import_test(){
     local arango_pid="$1"
     local filename="$2"
