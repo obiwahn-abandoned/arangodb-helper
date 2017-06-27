@@ -67,6 +67,8 @@ run_import_test(){
                 # meminfo="$(cat /proc/$arango_pid/statm | awk '{print "size "$1" resident "$2" shared "$3}')"
                 local time_percent="percent $percent time_s $(($(date +%s) - start_time))"
                 local meminfo="$(get_meminfo_statm $arango_pid)"
+                #local ioinfo="$(get_ioinfo_iotop $arango_pid)" # does not work
+                #echo "$time_percent $meminfo $ioinfo" | tee -a import.log
                 echo "$time_percent $meminfo" | tee -a import.log
             ;;
         esac
@@ -75,6 +77,14 @@ run_import_test(){
     duration=$((end_time - start_time))
     echo "the process took $duration seconds"
 }
+
+sudo iostat -d 10 -y -t -m -c -d > import-iostat.log&
+iostat_pid=$?
+
+finish(){
+    sudo kill $iostat_pid
+}
+trap finish EXIT
 
 echo "running: run_import_test $pid $filename $collection $port"
 run_import_test "$pid" "$filename" "$collection" "$port"
