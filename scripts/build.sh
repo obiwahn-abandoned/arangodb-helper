@@ -14,7 +14,9 @@ build_type="RelWithDebInfo"
 args=()
 
 cjemalloc="ON"
+enterprise="OFF"
 casan=false
+switch_only=false
 
 while [[ -n $1 ]]; do
     case $1 in
@@ -39,12 +41,26 @@ while [[ -n $1 ]]; do
             cjemalloc=false
             shift
         ;;
+        -nj|--no-jemalloc)
+            cjemalloc=false
+            shift
+        ;;
+        -s|--switch-only)
+            switch_only=true
+            shift
+        ;;
+        -e|--enterprise)
+            enterprise="ON"
+            shift
+        ;;
         *)
             args+=( "$1" )
+            shift
         ;;
     esac
 
 done
+echo "extra args: ${args[@]}"
 
 compiler=gcc
 
@@ -61,6 +77,10 @@ rm "${source_dir}-build"
 ln -s "$build_dir" "${source_dir}-build"
 rm "${source_dir}/build"
 ln -s "$build_dir" "${source_dir}/build"
+
+if $switch_only; then
+    exit 0
+fi
 
 if $delete_source_dir; then
   echo "delete old build"
@@ -115,7 +135,7 @@ CXXFLAGS="$cxx_flags" \
           -DUSE_MAINTAINER_MODE=ON \
           -DUSE_BOOST_UNITTESTS=ON \
           -DUSE_FAILURE_TESTS=ON \
-          -DUSE_ENTERPRISE=ON \
+          -DUSE_ENTERPRISE=$enterprise \
           -DUSE_JEMALLOC="$cjemalloc" \
           $source_dir
 set +x
