@@ -64,7 +64,8 @@ echo "extra args: ${args[@]}"
 
 compiler=gcc
 
-build_dir="${source_dir}-build-${build_type}"
+mkdir -p "${source_dir}-build"
+build_dir="${source_dir}-build/${build_type}"
 
 if $casan; then
     build_dir="${build_dir}-asan"
@@ -73,8 +74,8 @@ fi
 echo "source in: $source_dir"
 
 echo "update symlinks"
-rm "${source_dir}-build"
-ln -s "$build_dir" "${source_dir}-build"
+rm "${source_dir}-build/current"
+ln -s "$build_dir" "${source_dir}-build/current"
 rm "${source_dir}/build"
 ln -s "$build_dir" "${source_dir}/build"
 

@@ -6,11 +6,15 @@ gdb=false
 massif=false
 extra_logging=false
 authentication=false
+log_direct=false
+engine="rocksdb"
 port=8529
 
 cdir=$(pwd)
 dirprefix=${cdir%/*}
 dirname=${cdir##*/}
+
+mkdir -p "${cdir}-data"
 
 if $gdb; then
   cmd+=( 'gdb' '--args' )
@@ -40,10 +44,11 @@ cmd+=(
     '--server.endpoint' "http+tcp://0.0.0.0:$port"
     '--server.authentication' "$authentication"
     '--server.statistics' 'false'
-    '--server.storage-engine' 'rocksdb'
+    '--server.storage-engine' "$engine"
     '--foxx.queues' 'false'
-    '--console'
     '--temp.path' "/tmp/obi-$(date +%T)/"
+    '--log.force-direct' "$log_direct"
+    '--console'
 )
 
 if $extra_logging; then
@@ -53,7 +58,7 @@ if $extra_logging; then
     )
 fi
 
-cmd+=( "${cdir}-data-rocks-server" )
+cmd+=( "${cdir}-data/rocks-server" )
 
 echo "${cmd[@]}"
 "${cmd[@]}"
