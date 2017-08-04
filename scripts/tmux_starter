@@ -29,6 +29,7 @@ main(){
 
 # task definitions
 
+## normal tests
 suite_all(){
     local count="$1"
     shift 1
@@ -91,79 +92,23 @@ suite_all(){
     echo "./scripts/unittest $tests ${args_default[@]} ${args[@]} && exit 0"
 }
 
-portrange() {
+suite_all_rocksdb(){
     local count="$1"
-    local portStart=1240
-    local portOffset=20
-    echo "--minPort $(( portStart + count * portOffset )) --maxPort $(( portStart + (count + 1) * portOffset - 1))"
+    shift 1
+    local args="$@"
+
+    case $count in
+        name)
+            echo "test_all_rocksdb"
+            return
+        ;;
+        *)
+            suite_all "$count" "--storageEngine rocksdb" "${args[@]}"
+        ;;
+    esac
 }
 
-## suite_all_cluster(){
-##     local count="$1"
-##     shift 1
-##     local args="$@"
-##     local args_default=( '--cluster' 'true' )
-## 
-##     local tests=""
-##     case $count in
-##         num)
-##             echo "12"
-##             return
-##         ;;
-##         name)
-##             echo "test_all_cluster"
-##             return
-##         ;;
-##         delay)
-##             echo "10"
-##             return
-##         ;;
-##         0)
-##             echo "./scripts/quickieTest.sh ${args[@]} && exit 0"
-##             return
-##         ;;
-##         1)
-##             tests="shell_server $(portrange $count)"
-##         ;;
-##         2)
-##             tests="shell_client $(portrange $count)"
-##         ;;
-##         3)
-##             tests="shell_server_aql --testBuckets 3/0 $(portrange $count)"
-##         ;;
-##         4)
-##             tests="shell_server_aql --testBuckets 3/1 $(portrange $count)"
-##         ;;
-##         5)
-##             tests="shell_server_aql --testBuckets 3/2 $(portrange $count)"
-##         ;;
-##         6)
-##             tests="http_server $(portrange $count)"
-##         ;;
-##         7)
-##             tests="ssl_server $(portrange $count)"
-##         ;;
-##         8)
-##             tests="server_http $(portrange $count)"
-##         ;;
-##         9)
-##             tests="dump $(portrange $count)"
-##         ;;
-##         10)
-##             tests="agency $(portrange $count)"
-##         ;;
-##         11)
-##             tests="resilience $(portrange $count)"
-##         ;;
-##         *)
-##             echo "exit 0"
-##             return
-##     esac
-## 
-##     echo "./scripts/unittest $tests ${args_default[@]} ${args[@]} && exit 0"
-## }
-
-
+## cluster tests
 suite_all_cluster(){
     local count="$1"
     shift 1
@@ -211,22 +156,6 @@ suite_all_cluster(){
     echo "./scripts/unittest $tests ${args_default[@]} ${args[@]} && exit 0"
 }
 
-suite_all_rocksdb(){
-    local count="$1"
-    shift 1
-    local args="$@"
-
-    case $count in
-        name)
-            echo "test_all_rocksdb"
-            return
-        ;;
-        *)
-            suite_all "$count" "--storageEngine rocksdb" "${args[@]}"
-        ;;
-    esac
-}
-
 suite_all_rocksdb_cluster(){
     local count="$1"
     shift 1
@@ -242,6 +171,7 @@ suite_all_rocksdb_cluster(){
         ;;
     esac
 }
+
 # tmux
 kill_old_session(){
     local session_name="$1"
@@ -304,11 +234,19 @@ execute_tasks(){
 }
 
 # helper
+echoerr() { printf "%s\n" "$*" >&2; }
+
 die(){
     echo "FATAL: ${1-this should not happen}"
     exit 1
 }
 
+portrange() {
+    local count="$1"
+    local portStart=1240
+    local portOffset=20
+    echo "--minPort $(( portStart + count * portOffset )) --maxPort $(( portStart + (count + 1) * portOffset - 1))"
+}
 
 cores(){
     # Determine automatically on Mac or Linux
