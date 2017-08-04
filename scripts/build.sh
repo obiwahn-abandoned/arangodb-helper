@@ -17,6 +17,7 @@ cjemalloc="ON"
 enterprise="OFF"
 casan=false
 switch_only=false
+delete_source_dir=false
 
 while [[ -n $1 ]]; do
     case $1 in
