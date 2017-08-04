@@ -7,6 +7,7 @@ massif=false
 extra_logging=false
 authentication=false
 log_direct=false
+log_thread=false
 engine="rocksdb"
 port=8529
 
@@ -48,6 +49,7 @@ cmd+=(
     '--foxx.queues' 'false'
     '--temp.path' "/tmp/obi-$(date +%T)/"
     '--log.force-direct' "$log_direct"
+    '--log.thread' "$log_thread"
     '--console'
 )
 
@@ -58,7 +60,7 @@ if $extra_logging; then
     )
 fi
 
-cmd+=( "${cdir}-data/rocks-server" )
+cmd+=( "${cdir}-data/${engine}-server" )
 
 echo "${cmd[@]}"
 "${cmd[@]}"
