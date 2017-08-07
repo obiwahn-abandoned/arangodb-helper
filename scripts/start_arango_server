@@ -2,14 +2,37 @@
 
 cmd=()
 
+#debugger
 gdb=false
 massif=false
-extra_logging=false
-authentication=false
-log_direct=false
-log_thread=false
+
+# general settigns
 engine="rocksdb"
 port=8529
+
+# options that ease debugging
+authentication=false
+statistics=false
+queues=false
+
+#logging
+extra_logging=false
+log_direct=false
+log_thread=false
+
+#parse args
+while $1 do;
+    case $1 in
+        --rocksdb)
+            shift
+            engine="rocksdb"
+        ;;
+        --mmfiles)
+            shift
+            engine="mmfiles"
+        ;;
+    esac
+done
 
 cdir=$(pwd)
 dirprefix=${cdir%/*}
@@ -44,9 +67,9 @@ cmd+=( './build/bin/arangod' )
 cmd+=(
     '--server.endpoint' "http+tcp://0.0.0.0:$port"
     '--server.authentication' "$authentication"
-    '--server.statistics' 'false'
+    '--server.statistics' "$statistics"
     '--server.storage-engine' "$engine"
-    '--foxx.queues' 'false'
+    '--foxx.queues' "$queues"
     '--temp.path' "/tmp/obi-$(date +%T)/"
     '--log.force-direct' "$log_direct"
     '--log.thread' "$log_thread"
@@ -57,6 +80,7 @@ if $extra_logging; then
     cmd+=(
         '--log.level' 'communication=trace'
         '--log.level' 'requests=trace'
+        '--log.level' 'fixme=trace'
     )
 fi
 
