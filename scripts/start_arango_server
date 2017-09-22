@@ -17,12 +17,12 @@ queues=false
 
 #logging
 extra_logging=false
-log_direct=false
-log_thread=false
+log_direct=true
+log_thread=true
 
 #parse args
-while $1 do;
-    case $1 in
+while [[ -n $1 ]]; do
+    case "$1" in
         --rocksdb)
             shift
             engine="rocksdb"
@@ -63,7 +63,14 @@ done
 
 echo "using port $port"
 
-cmd+=( './build/bin/arangod' )
+exe_path="./build/bin/arangod"
+
+if [[ ! -x "$exe_path" ]]; then
+    echo "exectuable can not be found at $exe_path"
+    exit 1
+fi
+
+cmd+=( "$exe_path" )
 cmd+=(
     '--server.endpoint' "http+tcp://0.0.0.0:$port"
     '--server.authentication' "$authentication"
