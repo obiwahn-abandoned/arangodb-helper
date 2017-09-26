@@ -87,6 +87,9 @@ suite_all(){
             tests="agency cluster_sync"
         ;;
         *)
+            echo "exit 0"
+            return
+        ;;
     esac
 
     echo "./scripts/unittest $tests ${args_default[@]} ${args[@]} && exit 0"
@@ -170,6 +173,106 @@ suite_all_rocksdb_cluster(){
             suite_all_cluster "$count" "--storageEngine rocksdb" "${args[@]}"
         ;;
     esac
+}
+
+## start local cluster
+suite_local_cluster(){
+    local count="$1"
+    shift 1
+    local args="$@"
+    local args_default=( '-c' 'none'
+						 '--log.force-direct' 'true'
+						 '--log.level' 'INFO'
+						 '--server.authentication' 'false'
+						 '--javascript.startup-directory' './js'
+						 '--javascript.module-directory' './enterprise/js'
+                         '--console'
+					   )
+                         #'--log.role' 'true'
+
+	local args_cp=( '--server.statistics' 'true'
+					'--log.level' 'INFO'
+					'--server.threads' '5'
+					'--javascript.startup-directory' './js'
+					'--javascript.module-directory' './enterprise/js'
+				  )
+
+	local port_agency=28356	
+	local port_primary=32984
+	local port_coordinator=32885
+
+    local tests=""
+    local -a args_local
+    case $count in
+        num)
+            echo "6"
+            return
+        ;;
+        name)
+            echo "local_cluster"
+            return
+        ;;
+        delay)
+            echo "1"
+            return
+        ;;
+        0)
+			args_local=( '--server.endpoint' "tcp://[::]:$port_agency"
+			  		   '--database.directory' 'cluster/data-agency'
+			  		   '--javascript.app-path' './js/apps'
+			  		   '--javascript.v8-contexts' '1'
+			  		   '--agency.activate' 'true'
+			  		   '--agency.compaction-step-size'' 2000'
+			  		   '--agency.compaction-keep-size' '1000'
+			  		   '--agency.endpoint' "tcp://[::]:$port_agency"
+			  		   '--agency.my-address' "tcp://[::1]:$port_agency"
+			  		   '--agency.pool-size' '1'
+			  		   '--agency.size' '1'
+			  		   '--agency.supervision' 'true'
+			  		   '--agency.supervision-frequency' '1.0'
+			  		   '--agency.supervision-grace-period' '5.0'
+			  		   '--agency.wait-for-sync' 'false'
+			)
+        ;;
+        1)
+            mkdir -p cluster/apps-primary
+			args_local=( '--server.endpoint' "tcp://[::]:$port_primary"
+			  		   '--database.directory' 'cluster/data-primary'
+    		  		   '--javascript.app-path' 'cluster/apps-primary'
+			  		   '--cluster.agency-endpoint' "tcp://[::]:$port_agency"
+			  		   '--cluster.my-address' "tcp://[::1]:$port_primary"
+    		  		   '--cluster.my-role' 'PRIMARY'
+    		  		   '--log.file' 'cluster/primary.log'
+			)
+			args_local+=( "${args_cp[@]}" )
+        ;;
+        2)
+            mkdir -p cluster/apps-coordinator
+			args_local=( '--server.endpoint' "tcp://[::]:$port_coordinator"
+			  		   '--database.directory' 'cluster/data-coordinator'
+			  		   '--javascript.app-path' 'cluster/apps-coordinator'
+			  		   '--cluster.agency-endpoint' "tcp://[::]:$port_agency"
+			  		   '--cluster.my-address' "tcp://[::1]:$port_coordinator"
+			  		   '--cluster.my-role' 'COORDINATOR'
+			  		   '--log.file' 'cluster/coordinator.log'
+			)
+			args_local+=( "${args_cp[@]}" )
+        ;;
+        3)
+            echo "./build/bin/arangosh --server.endpoint tcp://[::]:$port_coordinator"
+            return
+        ;;
+        4)
+            echo "sudo ngrep -W byline -d lo port $port_agency or port $port_primary or port $port_coordinator"
+            return
+        ;;
+        *)
+            echo "exit 0"
+            return
+        ;;
+    esac
+
+    echo "./build/bin/arangod ${args_local[@]} ${args_default[@]} ${args[@]}"
 }
 
 # tmux
