@@ -1,9 +1,11 @@
 #!/bin/bash
 
 cmd=()
+args=()
 
 #debugger
 gdb=false
+rr=false
 massif=false
 
 # general settigns
@@ -23,14 +25,41 @@ log_thread=true
 #parse args
 while [[ -n $1 ]]; do
     case "$1" in
-        --rocksdb)
+        --gdb)
+            gdb=true
             shift
+        ;;
+        --rr)
+            rr=true
+            shift
+        ;;
+        --massif)
+            massif=true
+            shift
+        ;;
+        --rocksdb)
             engine="rocksdb"
+            shift
         ;;
         --mmfiles)
-            shift
             engine="mmfiles"
+            shift
         ;;
+        --no-direct)
+            log_direct=false
+            shift
+        ;;
+        --statistics)
+            statistics=true
+            shift
+        ;;
+        --port)
+            port=$2
+            shift 2
+        ;;
+        *)
+            args+=( "$1" )
+            shift
     esac
 done
 
@@ -44,6 +73,10 @@ if $gdb; then
   cmd+=( 'gdb' '--args' )
 fi
 
+if $rr; then
+  cmd+=( 'rr' )
+fi
+
 if $massif; then
   echo "starting with massif"
   cmd+=( 'valgrind' '--tool=massif'
@@ -53,7 +86,7 @@ if $massif; then
        )
 fi
 
-for p in 8529 5555 7777 8888 9999; do
+for p in $port 5555 7777 8888 9999; do
     if ! nc -z localhost $p ; then
         port=$p
         echo "found free port: $p"
@@ -79,8 +112,9 @@ cmd+=(
     '--foxx.queues' "$queues"
     '--temp.path' "/tmp/obi-$(date +%T)/"
     '--log.force-direct' "$log_direct"
+    '--log.foreground-tty' 'true'
     '--log.thread' "$log_thread"
-    '--console'
+    "${args[@]}"
 )
 
 if $extra_logging; then

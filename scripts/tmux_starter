@@ -187,16 +187,16 @@ suite_local_cluster(){
 						 '--javascript.startup-directory' './js'
 						 '--javascript.module-directory' './enterprise/js'
                          '--console'
+                         '--server.statistics' 'true' 
 					   )
-                         #'--log.role' 'true'
+                       # statistics false is new - check if it works with tests
+                       #'--log.role' 'true'
 
 	local args_cp=( '--server.statistics' 'true'
 					'--log.level' 'INFO'
 					'--server.threads' '5'
-					'--javascript.startup-directory' './js'
-					'--javascript.module-directory' './enterprise/js'
 				  )
-
+                  #'--server.statistics' 'true' 
 	local port_agency=28356	
 	local port_primary=32984
 	local port_coordinator=32885
@@ -213,7 +213,7 @@ suite_local_cluster(){
             return
         ;;
         delay)
-            echo "1"
+            echo "0"
             return
         ;;
         0)
@@ -229,8 +229,8 @@ suite_local_cluster(){
 			  		   '--agency.pool-size' '1'
 			  		   '--agency.size' '1'
 			  		   '--agency.supervision' 'true'
-			  		   '--agency.supervision-frequency' '1.0'
-			  		   '--agency.supervision-grace-period' '5.0'
+			  		   '--agency.supervision-frequency' '5.0'
+			  		   '--agency.supervision-grace-period' '25.0'
 			  		   '--agency.wait-for-sync' 'false'
 			)
         ;;
@@ -284,6 +284,7 @@ kill_old_session(){
         echo "killsess '$kill_sess'"
         if [[ ($kill_sess == "y") || ($kill_sess == "Y") ]]; then
             tmux kill-session -t $session_name
+            sleep 3
         else
             die "Session not created because it already exists. Exiting."
         fi

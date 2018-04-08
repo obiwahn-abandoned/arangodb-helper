@@ -98,8 +98,8 @@ cd $build_dir || exit
 case "$compiler" in
     *clang*)
         flags="$debug_flags"
-        cxx=/usr/bin/clang++-3.8
-        cc=/usr/bin/clang-3.8
+        cxx=/usr/bin/clang++-4.0
+        cc=/usr/bin/clang-4.0
         unset LD_LIBRARY_PATH
     ;;
     *clanghead*)
@@ -139,6 +139,8 @@ CXXFLAGS="$cxx_flags" \
           -DUSE_FAILURE_TESTS=ON \
           -DUSE_ENTERPRISE=$enterprise \
           -DUSE_JEMALLOC="$cjemalloc" \
+          -DUSE_IRESEARCH=ON \
+          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
           $source_dir
 set +x
           #-DUSE_SSL=ON \
