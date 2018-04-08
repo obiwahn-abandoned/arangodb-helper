@@ -1,0 +1,110 @@
+[
+  {
+    "edges": [
+      {
+        "_key": "6392826",
+        "_id": "germanHighway/6392826",
+        "_from": "germanCity/Hamburg",
+        "_to": "germanCity/Cologne",
+        "_rev": "_WmZ77pW--D",
+        "distance": 500
+      }
+    ],
+    "vertices": [
+      {
+        "_key": "Hamburg",
+        "_id": "germanCity/Hamburg",
+        "_rev": "_WmZ77Z---_",
+        "population": 1000000,
+        "isCapital": false,
+        "loc": [
+          53.5653,
+          10.0014
+        ]
+      },
+      {
+        "_key": "Cologne",
+        "_id": "germanCity/Cologne",
+        "_rev": "_WmZ77Y6--B",
+        "population": 1000000,
+        "isCapital": false,
+        "loc": [
+          50.9364,
+          6.9528
+        ]
+      }
+    ]
+  },
+  {
+    "edges": [
+      {
+        "_key": "6392840",
+        "_id": "internationalHighway/6392840",
+        "_from": "germanCity/Hamburg",
+        "_to": "frenchCity/Paris",
+        "_rev": "_WmZ77pa--_",
+        "distance": 900
+      }
+    ],
+    "vertices": [
+      {
+        "_key": "Hamburg",
+        "_id": "germanCity/Hamburg",
+        "_rev": "_WmZ77Z---_",
+        "population": 1000000,
+        "isCapital": false,
+        "loc": [
+          53.5653,
+          10.0014
+        ]
+      },
+      {
+        "_key": "Paris",
+        "_id": "frenchCity/Paris",
+        "_rev": "_WmZ77Z---D",
+        "population": 4000000,
+        "isCapital": true,
+        "loc": [
+          48.8567,
+          2.3508
+        ]
+      }
+    ]
+  },
+  {
+    "edges": [
+      {
+        "_key": "6392843",
+        "_id": "internationalHighway/6392843",
+        "_from": "germanCity/Hamburg",
+        "_to": "frenchCity/Lyon",
+        "_rev": "_WmZ77pa--B",
+        "distance": 1300
+      }
+    ],
+    "vertices": [
+      {
+        "_key": "Hamburg",
+        "_id": "germanCity/Hamburg",
+        "_rev": "_WmZ77Z---_",
+        "population": 1000000,
+        "isCapital": false,
+        "loc": [
+          53.5653,
+          10.0014
+        ]
+      },
+      {
+        "_key": "Lyon",
+        "_id": "frenchCity/Lyon",
+        "_rev": "_WmZ77Z---B",
+        "population": 80000,
+        "isCapital": false,
+        "loc": [
+          45.76,
+          4.84
+        ]
+      }
+    ]
+  }
+]
