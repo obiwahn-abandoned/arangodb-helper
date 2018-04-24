@@ -15,8 +15,12 @@ target_include_directories(arango-graphviz INTERFACE
 
 # add taocpp-json
 add_subdirectory(3rdParty/json EXCLUDE_FROM_ALL)
+add_subdirectory(3rdParty/velocypack EXCLUDE_FROM_ALL)
+add_subdirectory(3rdParty/libobi EXCLUDE_FROM_ALL)
 target_link_libraries(arango-graphviz INTERFACE
     taocpp-json
+    velocypack
+    obi
 )
 
 # add c++programm

@@ -4,6 +4,8 @@
 #include <tao/json.hpp>
 #include <arango-graphviz.hpp>
 
+#include <obi/util.hpp>
+
 
 int main(int argc, char *argv[]){
     if(argc < 2){
