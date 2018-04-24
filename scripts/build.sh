@@ -13,7 +13,7 @@ build_type="RelWithDebInfo"
 
 args=()
 
-cjemalloc="ON"
+cjemalloc="OFF"
 enterprise="OFF"
 casan=false
 switch_only=false
@@ -109,7 +109,7 @@ case "$compiler" in
         unset LD_LIBRARY_PATH
     ;;
     *gcc*)
-        asan="-fsanitize=address -fsanitize=undefined -fno-sanitize=alignment -fno-omit-frame-pointer -fno-sanitize=vptr" 
+        asan="-fsanitize=address -fsanitize=undefined -fno-sanitize=alignment -fno-omit-frame-pointer -fno-sanitize=vptr"
         cxx="/usr/bin/g++"
         cc="/usr/bin/gcc"
         ;;
@@ -135,7 +135,6 @@ CC=$cc \
 CXXFLAGS="$cxx_flags" \
     cmake -DCMAKE_BUILD_TYPE=$build_type \
           -DUSE_MAINTAINER_MODE=ON \
-          -DUSE_BOOST_UNITTESTS=ON \
           -DUSE_FAILURE_TESTS=ON \
           -DUSE_ENTERPRISE=$enterprise \
           -DUSE_JEMALLOC="$cjemalloc" \
