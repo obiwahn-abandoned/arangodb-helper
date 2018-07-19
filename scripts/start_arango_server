@@ -23,11 +23,17 @@ extra_logging=false
 log_direct=true
 log_thread=true
 
+starter=false
+
 #parse args
 while [[ -n $1 ]]; do
     case "$1" in
         --dir)
             directory="$2"
+            shift 2
+        ;;
+        --full-dir|--fulldir)
+            full_data_dir="$2"
             shift 2
         ;;
         --gdb)
@@ -66,44 +72,24 @@ while [[ -n $1 ]]; do
             port=$2
             shift 2
         ;;
+        --starter)
+            starter=true
+            shift
+        ;;
         *)
             args+=( "$1" )
             shift
     esac
 done
 
-cdir=$(pwd)
-dirprefix=${cdir%/*}
-dirname=${cdir##*/}
+source_dir=$(pwd)
+dirprefix=${source_dir%/*}
+##dirname=${source_dir##*/}
 
-mkdir -p "${cdir}-data"
+mkdir -p "${source_dir}-data"
 
-if $gdb; then
-  cmd+=( 'gdb' '--args' )
-fi
-
-if $rr; then
-  cmd+=( 'rr' )
-fi
-
-if $massif; then
-  echo "starting with massif"
-  cmd+=( 'valgrind' '--tool=massif'
-         '--depth=50' '--detailed-freq=1'
-        # '--time-unit=ms'
-         '--vgdb=yes'
-       )
-fi
-
-for p in $port 5555 7777 8888 9999; do
-    if ! nc -z localhost $p ; then
-        port=$p
-        echo "found free port: $p"
-        break
-    fi
-done
-
-echo "using port $port"
+${full_data_dir:="${source_dir}-data/${directory}_${engine}"}
+echo "running db with data dir: $full_data_dir"
 
 exe_path="./build/bin/arangod"
 
@@ -112,29 +98,68 @@ if [[ ! -x "$exe_path" ]]; then
     exit 1
 fi
 
-cmd+=( "$exe_path" )
-cmd+=(
-    '--server.endpoint' "http+tcp://0.0.0.0:$port"
-    '--server.authentication' "$authentication"
-    '--server.statistics' "$statistics"
-    '--server.storage-engine' "$engine"
-    '--foxx.queues' "$queues"
-    '--temp.path' "/tmp/obi-$(date +%T)/"
-    '--log.force-direct' "$log_direct"
-    '--log.foreground-tty' 'true'
-    '--log.thread' "$log_thread"
-    "${args[@]}"
-)
+if ! $starter; then
 
-if $extra_logging; then
+    if $gdb; then
+      cmd+=( 'gdb' '--args' )
+    fi
+
+    if $rr; then
+      cmd+=( 'rr' )
+    fi
+
+    if $massif; then
+      echo "starting with massif"
+      cmd+=( 'valgrind' '--tool=massif'
+             '--depth=50' '--detailed-freq=1'
+            # '--time-unit=ms'
+             '--vgdb=yes'
+           )
+    fi
+
+    for p in $port 5555 7777 8888 9999; do
+        if ! nc -z localhost $p ; then
+            port=$p
+            echo "found free port: $p"
+            break
+        fi
+    done
+
+    echo "using port $port"
+
+
+    cmd+=( "$exe_path" )
     cmd+=(
-        '--log.level' 'communication=trace'
-        '--log.level' 'requests=trace'
-        '--log.level' 'fixme=trace'
+        '--server.endpoint' "http+tcp://0.0.0.0:$port"
+        '--server.authentication' "$authentication"
+        '--server.statistics' "$statistics"
+        '--server.storage-engine' "$engine"
+        '--foxx.queues' "$queues"
+        '--temp.path' "/tmp/obi-$(date +%T)/"
+        '--log.force-direct' "$log_direct"
+        '--log.foreground-tty' 'true'
+        '--log.thread' "$log_thread"
+        "${args[@]}"
+    )
+
+    if $extra_logging; then
+        cmd+=(
+            '--log.level' 'communication=trace'
+            '--log.level' 'requests=trace'
+            '--log.level' 'fixme=trace'
+        )
+    fi
+
+
+    cmd+=( "${full_data_dir}" )
+
+else
+    cmd=(
+        arangod-starter-binary
+        "--server.arangod" "$exe_path"
+        "${args[@]}"
     )
 fi
 
-cmd+=( "${cdir}-data/${directory}_${engine}" )
-
-echo "${cmd[@]}"
+echo "# ${cmd[@]}"
 "${cmd[@]}"
