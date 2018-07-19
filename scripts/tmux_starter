@@ -11,7 +11,7 @@ main(){
     shift
 
     local tasks="suite_$suite"
-    type -t function $tasks &>/dev/null|| die "suite $suite not defined"
+    type -t function $tasks &>/dev/null|| die "suite $suite not defined! \ntry one of: local_cluster all all_cluster all_rocksdb all_rocksdb_cluster"
     echo "using function name: $tasks"
     local session_name="$($tasks 'name')"
     echo "using session name: $session_name"
@@ -188,7 +188,6 @@ suite_local_cluster(){
 						 '--javascript.module-directory' './enterprise/js'
                          '--server.statistics' 'true'
                          '--server.storage-engine' 'rocksdb'
-                         '--console'
 					   )
                        # statistics false is new - check if it works with tests
                        #'--log.role' 'true'
@@ -218,11 +217,11 @@ suite_local_cluster(){
             return
         ;;
         0)
+			  		   # '--javascript.v8-contexts' '1'
 			args_local=( '--server.endpoint' "tcp://[::]:$port_agency"
 			  		   '--database.directory' 'tmux_cluster/data-agency'
-			  		   '--javascript.app-path' './js/apps'
-			  		   '--javascript.v8-contexts' '1'
 			  		   '--agency.activate' 'true'
+			  		   '--javascript.app-path' './js/apps'
 			  		   '--agency.compaction-step-size'' 2000'
 			  		   '--agency.compaction-keep-size' '1000'
 			  		   '--agency.endpoint' "tcp://[::]:$port_agency"
@@ -244,6 +243,7 @@ suite_local_cluster(){
 			  		   '--cluster.my-address' "tcp://[::1]:$port_primary1"
     		  		   '--cluster.my-role' 'PRIMARY'
     		  		   '--log.file' 'tmux_cluster/primary1.log'
+                       '--console'
 			)
 			args_local+=( "${args_cp[@]}" )
         ;;
@@ -256,6 +256,7 @@ suite_local_cluster(){
 			  		   '--cluster.my-address' "tcp://[::1]:$port_primary2"
     		  		   '--cluster.my-role' 'PRIMARY'
     		  		   '--log.file' 'tmux_cluster/primary2.log'
+                       '--console'
 			)
 			args_local+=( "${args_cp[@]}" )
         ;;
@@ -268,6 +269,7 @@ suite_local_cluster(){
 			  		   '--cluster.my-address' "tcp://[::1]:$port_coordinator"
 			  		   '--cluster.my-role' 'COORDINATOR'
 			  		   '--log.file' 'tmux_cluster/coordinator.log'
+                       '--console'
 			)
 			args_local+=( "${args_cp[@]}" )
         ;;
@@ -354,7 +356,7 @@ execute_tasks(){
 echoerr() { printf "%s\n" "$*" >&2; }
 
 die(){
-    echo "FATAL: ${1-this should not happen}"
+    echo -e "FATAL: ${1-this should not happen}"
     exit 1
 }
 
