@@ -74,9 +74,11 @@ fi
 
 echo "source in: $source_dir"
 
-echo "update symlinks"
+echo "update <build_dir>/current line: '${source_dir}-build/current'"
 rm "${source_dir}-build/current"
 ln -s "$build_dir" "${source_dir}-build/current"
+
+echo "update <source>/build link: '${source_dir}/build'"
 rm "${source_dir}/build"
 ln -s "$build_dir" "${source_dir}/build"
 
@@ -85,14 +87,16 @@ if $switch_only; then
 fi
 
 if $delete_source_dir; then
-  echo "delete old build"
-  rm -fr "$build_dir/"*
+  echo "delete old build in '$build_dir'"
+  rm -fr "$build_dir"
 fi
 
-echo "create dir if neccessary"
-[ -d $build_dir ] || mkdir -p $build_dir
+if ! [ -d $build_dir ]; then
+    echo "create build dir: '$build_dir'"
+    mkdir -p $build_dir || { echo "could not create build dir"; exit 1; }
+fi
 echo "change into build dir: $build_dir"
-cd $build_dir || exit
+cd $build_dir || { echo "could not enter build dir"; exit 1; }
 
 
 case "$compiler" in
@@ -129,6 +133,7 @@ fi
 cxx_flags="$flags"
 #CFLAGS="$flags" \
 
+sleep 3
 set -x
 CXX=$cxx \
 CC=$cc \
@@ -141,6 +146,7 @@ CXXFLAGS="$cxx_flags" \
           -DUSE_IRESEARCH=ON \
           -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
           $source_dir
+          #-G Ninja \
 set +x
           #-DUSE_SSL=ON \
 
