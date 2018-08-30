@@ -127,6 +127,9 @@ if ! $starter; then
 
     echo "using port $port"
 
+    mkdir -p "${full_data_dir}"
+    touch "${full_data_dir}/arangod3.log"
+
 
     cmd+=( "$exe_path" )
     cmd+=(
@@ -139,8 +142,11 @@ if ! $starter; then
         '--log.force-direct' "$log_direct"
         '--log.foreground-tty' 'true'
         '--log.thread' "$log_thread"
+        '-c' 'etc/relative/arangod.conf'
         "${args[@]}"
     )
+        #'--javascript.startup-directory' './js'
+        #'--log.file' "${full_data_dir}/arangod3.log"
 
     if $extra_logging; then
         cmd+=(
