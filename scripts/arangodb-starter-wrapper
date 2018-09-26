@@ -1,0 +1,15 @@
+#!/bin/bash
+
+data_dir="$1"
+shift
+echo "data_dir: $data_dir"
+
+arangodb-linux-amd64 \
+    --starter.local \
+    --server.arangod ./build/bin/arangod \
+    --server.rr /home/oberon/.bin_safe/rr \
+    --log.verbose \
+    --server.storage-engine rocksdb \
+    --starter.data-dir "$data_dir" \
+    "$@"
+
