@@ -2,10 +2,18 @@
 
 echo "${BASH_SOURCE}"
 source_path="$(realpath -s "${BASH_SOURCE[0]}")"
-source_dir="$(dirname $source_path)"
+source_dir="$(dirname "$source_path")"
+
+source_dir="$(readlink -f $(pwd))"
+
 
 if [[ -z $source_dir ]]; then
     echo "could not resolve source_dir"
+    exit 1
+fi
+
+if ! [[ -f $source_dir/VERSION ]] || ! [[ -d $source_dir/arangod ]]; then
+    echo "'$source_dir' is not a source directory"
     exit 1
 fi
 
@@ -18,6 +26,7 @@ enterprise="OFF"
 casan=false
 switch_only=false
 delete_source_dir=false
+build=false
 
 while [[ -n $1 ]]; do
     case $1 in
@@ -52,6 +61,10 @@ while [[ -n $1 ]]; do
         ;;
         -e|--enterprise)
             enterprise="ON"
+            shift
+        ;;
+        -b|--build)
+            build=true
             shift
         ;;
         *)
@@ -157,4 +170,8 @@ if [[ $? ]]; then
 else
     echo "failed to configure"
     pwd
+fi
+
+if $build; then
+    make -j $(nproc)
 fi
