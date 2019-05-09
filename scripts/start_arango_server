@@ -7,6 +7,8 @@ args=()
 gdb=false
 rr=false
 massif=false
+callgrind=false
+perf=false
 
 # general settigns
 engine="rocksdb"
@@ -16,7 +18,7 @@ directory="default"
 # options that ease debugging
 authentication=false
 statistics=false
-queues=false
+queues=true
 
 #logging
 extra_logging=false
@@ -44,8 +46,16 @@ while [[ -n $1 ]]; do
             rr=true
             shift
         ;;
+        --perf)
+            perf=true
+            shift
+        ;;
         --massif)
             massif=true
+            shift
+        ;;
+        --callgrind)
+            callgrind=true
             shift
         ;;
         --rocksdb)
@@ -114,6 +124,17 @@ if ! $starter; then
              '--depth=50' '--detailed-freq=1'
             # '--time-unit=ms'
              '--vgdb=yes'
+           )
+    elif $callgrind; then
+      echo "starting with massif"
+      cmd+=( 'valgrind' '--tool=callgrind'
+             '--instr-atstart=no'
+            # '--time-unit=ms'
+             '--vgdb=yes'
+           )
+    elif $perf; then
+      echo "starting with massif"
+      cmd+=( 'perf' 'record'
            )
     fi
 

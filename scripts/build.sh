@@ -21,11 +21,17 @@ build_type="RelWithDebInfo"
 
 args=()
 
-cjemalloc="OFF"
-enterprise="OFF"
-casan=false
+cmake_jemalloc="OFF"
+cmake_maintainer_mode="ON"
+cmake_enterprise="OFF"
+
+
+asan=false
+tsan=false
+perf=false
 switch_only=false
 delete_source_dir=false
+
 build=false
 
 while [[ -n $1 ]]; do
@@ -47,12 +53,23 @@ while [[ -n $1 ]]; do
             shift
         ;;
         -a|--asan)
-            casan=true
-            cjemalloc=false
+            asan=true
+            tsan=false
+            cmake_jemalloc=false
+            shift
+        ;;
+        -p| --perf)
+            perf=true
+            shift
+        ;;
+        -t|--tsan)
+            asan=false
+            tsan=true
+            cmake_jemalloc=false
             shift
         ;;
         -nj|--no-jemalloc)
-            cjemalloc=false
+            cmake_jemalloc="OFF"
             shift
         ;;
         -s|--switch-only)
@@ -60,11 +77,15 @@ while [[ -n $1 ]]; do
             shift
         ;;
         -e|--enterprise)
-            enterprise="ON"
+            cmake_enterprise="ON"
             shift
         ;;
         -b|--build)
             build=true
+            shift
+        ;;
+        --no-maint*)
+            cmake_maintainer_mode="OFF"
             shift
         ;;
         *)
@@ -81,7 +102,7 @@ compiler=gcc
 mkdir -p "${source_dir}-build"
 build_dir="${source_dir}-build/${build_type}"
 
-if $casan; then
+if $asan; then
     build_dir="${build_dir}-asan"
 fi
 
@@ -126,42 +147,51 @@ case "$compiler" in
         unset LD_LIBRARY_PATH
     ;;
     *gcc*)
-        asan="-fsanitize=address -fsanitize=undefined -fno-sanitize=alignment -fno-omit-frame-pointer -fno-sanitize=vptr"
+        flags=""
+        flags_asan="-fsanitize=address -fsanitize=undefined -fno-sanitize=alignment -fno-omit-frame-pointer -fno-sanitize=vptr -pthread"
+        flags_tsan="-fsanitize=undefined -fno-sanitize=alignment -fno-omit-frame-pointer -fno-sanitize=vptr -fsanitize=thread"
         cxx="/usr/bin/g++"
         cc="/usr/bin/gcc"
         ;;
     *gcchead*)
-        #asan="-fsanitize=address -fsanitize=undefined -fno-sanitize=alignment -fno-sanitize=vptr"
-        flags="$debug_flags -lpthread -gdwarf-4 $asan"
+        #flags_asan="-fsanitize=address -fsanitize=undefined -fno-sanitize=alignment -fno-sanitize=vptr"
+        flags="$debug_flags -lpthread -gdwarf-4 "
         cxx="$HOME/.bin/g++-6"
         cc="$HOME/.bin/gcc-6"
         export LD_LIBRARY_PATH=/opt/gcc_stable_2016-07-06/lib64
     ;;
 esac
 
-if $casan; then
-    flags="$asan"
+if $asan; then
+    flags="$flags_asan $flags"
+fi
+
+if $tsan; then
+    flags="$flags_tsan $flags"
+fi
+
+if $perf; then
+    flags="$flags -fno-omit-frame-pointer"
 fi
 
 cxx_flags="$flags"
-#CFLAGS="$flags" \
 
 sleep 3
 set -x
-CXX=$cxx \
-CC=$cc \
+CXX=${CXX-$cxx} \
+CC=${CC-$cc} \
+CFLAGS="$flags" \
 CXXFLAGS="$cxx_flags" \
     cmake -DCMAKE_BUILD_TYPE=$build_type \
-          -DUSE_MAINTAINER_MODE=ON \
+          -DUSE_MAINTAINER_MODE="$cmake_maintainer_mode" \
           -DUSE_FAILURE_TESTS=ON \
-          -DUSE_ENTERPRISE=$enterprise \
-          -DUSE_JEMALLOC="$cjemalloc" \
+          -DUSE_ENTERPRISE=$cmake_enterprise \
+          -DUSE_JEMALLOC="$cmake_jemalloc" \
           -DUSE_IRESEARCH=ON \
           -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+          -DCMAKE_INSTALL_PREFIX=~/arangodb-install \
+          ${args[@]} \
           $source_dir
-          #-G Ninja \
-set +x
-          #-DUSE_SSL=ON \
 
 
 if [[ $? ]]; then
