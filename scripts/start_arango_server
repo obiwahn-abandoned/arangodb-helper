@@ -98,7 +98,7 @@ dirprefix=${source_dir%/*}
 
 mkdir -p "${source_dir}-data"
 
-${full_data_dir:="${source_dir}-data/${directory}_${engine}"}
+full_data_dir="${full_data_dir:-"${source_dir}-data/${directory}_${engine}"}"
 echo "running db with data dir: $full_data_dir"
 
 exe_path="./build/bin/arangod"
@@ -181,9 +181,15 @@ if ! $starter; then
     cmd+=( "${full_data_dir}" )
 
 else
+    exe_path="$source_dir/$exe_path"
+    js_path="$source_dir/js"
+    pwd
+    mkdir -p starter_bullshit
+    cd starter_bullshit || { echo "can not enter dir"; exit 1; }
     cmd=(
-        arangod-starter-binary
+        arangodb-starter-binary
         "--server.arangod" "$exe_path"
+        "--server.js-dir" "$js_path"
         "${args[@]}"
     )
 fi
