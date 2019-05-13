@@ -187,7 +187,6 @@ CXXFLAGS="$cxx_flags" \
           -DUSE_FAILURE_TESTS=ON \
           -DUSE_ENTERPRISE=$cmake_enterprise \
           -DUSE_JEMALLOC="$cmake_jemalloc" \
-          -DUSE_IRESEARCH=ON \
           -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
           -DCMAKE_INSTALL_PREFIX=~/arangodb-install \
           ${args[@]} \
