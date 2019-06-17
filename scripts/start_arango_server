@@ -188,8 +188,11 @@ else
     cd starter_bullshit || { echo "can not enter dir"; exit 1; }
     cmd=(
         arangodb-starter-binary
+        "--starter.local"
         "--server.arangod" "$exe_path"
         "--server.js-dir" "$js_path"
+        '--all.server.statistics' "$statistics"
+        '--all.foxx.queues' "$queues"
         "${args[@]}"
     )
 fi
