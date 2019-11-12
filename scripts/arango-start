@@ -18,7 +18,7 @@ directory="default"
 # options that ease debugging
 authentication=false
 statistics=false
-queues=true
+queues=false
 
 #logging
 extra_logging=false
@@ -40,6 +40,10 @@ while [[ -n $1 ]]; do
         ;;
         --gdb)
             gdb=true
+            shift
+        ;;
+        --queues)
+            queues=true
             shift
         ;;
         --rr)
@@ -76,6 +80,7 @@ while [[ -n $1 ]]; do
         ;;
         --statistics)
             statistics=true
+            queues=true
             shift
         ;;
         --port)
@@ -181,6 +186,7 @@ if ! $starter; then
     cmd+=( "${full_data_dir}" )
 
 else
+
     exe_path="$source_dir/$exe_path"
     js_path="$source_dir/js"
     pwd
@@ -189,12 +195,17 @@ else
     cmd=(
         arangodb-starter-binary
         "--starter.local"
-        "--server.arangod" "$exe_path"
-        "--server.js-dir" "$js_path"
-        '--all.server.statistics' "$statistics"
-        '--all.foxx.queues' "$queues"
+        "--server.arangod"="$exe_path"
+        "--server.js-dir"="$js_path"
+        '--all.server.statistics'="$statistics"
+        '--all.foxx.queues'="$queues"
         "${args[@]}"
     )
+
+    if $rr; then
+      cmd+=( "--server.rr=$HOME/.usr-local/bin/rr" )
+    fi
+
 fi
 
 echo "# ${cmd[@]}"
