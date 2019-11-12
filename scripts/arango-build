@@ -21,7 +21,7 @@ build_type="RelWithDebInfo"
 
 args=()
 
-cmake_jemalloc="OFF"
+cmake_jemalloc="ON"
 cmake_maintainer_mode="ON"
 cmake_enterprise="OFF"
 
@@ -46,6 +46,7 @@ while [[ -n $1 ]]; do
         ;;
         r:Debug)
             build_type="Debug"
+            cmake_jemalloc="OFF"
             shift
         ;;
         -d|--delete)
@@ -55,7 +56,7 @@ while [[ -n $1 ]]; do
         -a|--asan)
             asan=true
             tsan=false
-            cmake_jemalloc=false
+            cmake_jemalloc="OFF"
             shift
         ;;
         -p| --perf)
@@ -65,7 +66,7 @@ while [[ -n $1 ]]; do
         -t|--tsan)
             asan=false
             tsan=true
-            cmake_jemalloc=false
+            cmake_jemalloc="OFF"
             shift
         ;;
         -nj|--no-jemalloc)
