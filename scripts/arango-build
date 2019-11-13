@@ -1,10 +1,16 @@
 #!/bin/bash
+set -u
 
 echo "${BASH_SOURCE}"
 source_path="$(realpath -s "${BASH_SOURCE[0]}")"
 source_dir="$(dirname "$source_path")"
 
 source_dir="$(readlink -f $(pwd))"
+
+ferr() {
+    echo $*
+    exit 1
+}
 
 
 if [[ -z $source_dir ]]; then
@@ -31,10 +37,16 @@ tsan=false
 perf=false
 switch_only=false
 delete_source_dir=false
+change_openssl_version=true
+openssl_version="1"
+
+if $change_openssl_version; then
+    sed -i '/OPENSSL/s/".*"/"'"$openssl_version"'"/' "$source_dir/VERSIONS" || ferr "failed to fix versions"
+fi
 
 build=false
 
-while [[ -n $1 ]]; do
+while [[ -n ${1:-''} ]]; do
     case $1 in
         r:RelWith*)
             build_type="RelWithDebInfo"
@@ -89,6 +101,11 @@ while [[ -n $1 ]]; do
             cmake_maintainer_mode="OFF"
             shift
         ;;
+        -o|--openssl*)
+            change_openssl_version=true
+            openssl_version="$2"
+            shift 2
+        ;;
         *)
             args+=( "$1" )
             shift
@@ -128,10 +145,10 @@ fi
 
 if ! [ -d $build_dir ]; then
     echo "create build dir: '$build_dir'"
-    mkdir -p $build_dir || { echo "could not create build dir"; exit 1; }
+    mkdir -p $build_dir || ferr "could not create build dir"
 fi
 echo "change into build dir: $build_dir"
-cd $build_dir || { echo "could not enter build dir"; exit 1; }
+cd $build_dir || ferr "could not enter build dir"
 
 
 case "$compiler" in
@@ -186,6 +203,7 @@ CXXFLAGS="$cxx_flags" \
     cmake -DCMAKE_BUILD_TYPE=$build_type \
           -DUSE_MAINTAINER_MODE="$cmake_maintainer_mode" \
           -DUSE_FAILURE_TESTS=ON \
+          -DUSE_STRICT_OPENSSL_VERSION=OFF \
           -DUSE_ENTERPRISE=$cmake_enterprise \
           -DUSE_JEMALLOC="$cmake_jemalloc" \
           -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
@@ -200,6 +218,13 @@ if [[ $? ]]; then
 else
     echo "failed to configure"
     pwd
+fi
+
+if $change_openssl_version; then
+    (
+        cd "$source_dir"
+        git checkout -- VERSIONS
+    ) || ferr "failed to reset VERSIONS"
 fi
 
 if $build; then
